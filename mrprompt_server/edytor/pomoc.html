@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomoc: MrPrompt Edytor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{--bg:#1e1e1e;--panel:#252526;--card:#2b2b2d;--border:#3d3d3d;--text:#d4d4d4;--muted:#9a9a9a;--bright:#fff;--accent:#b87a00;--accent2:#d18f0a;--green:#4ec994;--red:#f44747}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.7 'Inter','Segoe UI',system-ui,sans-serif}
+a{color:var(--accent2)}
+.top{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:10px 20px;flex-wrap:wrap}
+.top h1{font-size:16px;margin:0;color:var(--bright);font-weight:600;display:flex;gap:9px;align-items:center}
+.top h1 i{color:var(--accent2)}
+.top .sp{flex:1}
+.top input{background:#3c3c3c;border:1px solid transparent;color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px;width:280px;max-width:100%;outline:none;font-family:inherit}
+.top input:focus{border-color:var(--accent)}
+.btn{background:#3c3c3c;color:var(--text);border:1px solid #4a4a4a;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.btn:hover{background:#4a4a4a;color:#fff}
+.wrap{display:flex;max-width:1180px;margin:0 auto}
+nav{width:270px;flex-shrink:0;position:sticky;top:57px;align-self:flex-start;max-height:calc(100vh - 57px);overflow-y:auto;padding:18px 10px 30px 20px;border-right:1px solid var(--border)}
+nav a{display:flex;gap:9px;align-items:baseline;padding:6px 10px;border-radius:6px;color:var(--muted);text-decoration:none;font-size:13px;line-height:1.35}
+nav a:hover{background:#2a2d2e;color:var(--text)}
+nav a.on{background:#37373d;color:#fff}
+nav a i{width:16px;text-align:center;color:var(--accent2);flex-shrink:0}
+main{flex:1;min-width:0;padding:26px 34px 80px}
+.lead{font-size:16px;color:var(--text);background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:16px 20px;margin-bottom:26px}
+section{margin-bottom:44px;scroll-margin-top:72px}
+h2{font-size:22px;color:var(--bright);margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center}
+h2 i{color:var(--accent2);font-size:19px}
+h3{font-size:15px;color:#f0b84a;margin:22px 0 6px}
+p{margin:8px 0}
+ul,ol{margin:8px 0 8px 0;padding-left:24px}
+li{margin:4px 0}
+kbd{background:#1a1a1a;border:1px solid #555;border-bottom-width:2px;border-radius:4px;padding:0 6px;font:12px 'JetBrains Mono',Consolas,monospace;color:#eee;white-space:nowrap}
+code{background:#1a1a1a;border-radius:4px;padding:1px 6px;font:13px 'JetBrains Mono',Consolas,monospace;color:#e2b76a}
+.tip,.warn,.note{border-radius:8px;padding:12px 16px;margin:14px 0;font-size:14px;border:1px solid}
+.tip{background:rgba(78,201,148,.08);border-color:rgba(78,201,148,.35)}
+.tip::before{content:'Wskazówka: ';font-weight:700;color:var(--green)}
+.warn{background:rgba(244,71,71,.08);border-color:rgba(244,71,71,.4)}
+.warn::before{content:'Uwaga: ';font-weight:700;color:var(--red)}
+.note{background:rgba(184,122,0,.1);border-color:rgba(184,122,0,.4)}
+.note::before{content:'Dobrze wiedzieć: ';font-weight:700;color:var(--accent2)}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel);color:var(--bright);font-weight:600}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:14px 0}
+.map div{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13.5px}
+.map b{display:block;color:#fff;margin-bottom:3px}
+.hide{display:none!important}
+.empty{display:none;padding:30px;text-align:center;color:var(--muted)}
+footer{border-top:1px solid var(--border);padding:20px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:820px){nav{display:none}main{padding:20px 16px 60px}}
+@media print{.top,nav{display:none}body{background:#fff;color:#000}h2,h3{color:#000}}
+</style></head><body>
+<div class="top"><h1><i class="fa-solid fa-circle-question"></i>Pomoc: MrPrompt Edytor</h1><div class="sp"></div>
+<input id="q" type="search" placeholder="Szukaj w pomocy… (Ctrl+F)" autocomplete="off">
+<button class="btn" onclick="window.print()"><i class="fa-solid fa-print"></i> Drukuj</button></div>
+<div class="wrap"><nav><a href="#cel"><i class="fa-solid fa-bullseye"></i><span>Do czego służy Edytor?</span></a><a href="#ekran"><i class="fa-solid fa-table-columns"></i><span>Jak wygląda ekran</span></a><a href="#start"><i class="fa-solid fa-folder-open"></i><span>Otwieranie folderu i plików</span></a><a href="#karty"><i class="fa-solid fa-file-code"></i><span>Karty, edycja i zapisywanie</span></a><a href="#eksplorator"><i class="fa-solid fa-folder-tree"></i><span>Eksplorator: prawy przycisk myszy</span></a><a href="#szukanie"><i class="fa-solid fa-magnifying-glass"></i><span>Szukanie w wielu plikach</span></a><a href="#widok"><i class="fa-solid fa-eye"></i><span>Menu Widok i podgląd na żywo</span></a><a href="#przeglad"><i class="fa-solid fa-code-compare"></i><span>Przegląd zmian: co AI zmieniło? (najważniejsze)</span></a><a href="#auto"><i class="fa-solid fa-rotate"></i><span>Karty odświeżają się same</span></a><a href="#paczka"><i class="fa-solid fa-box-archive"></i><span>Paczka kontekstu dla AI</span></a><a href="#aipliki"><i class="fa-solid fa-scroll"></i><span>Pliki sterujące AI (CLAUDE.md i inne)</span></a><a href="#polecenia"><i class="fa-solid fa-terminal"></i><span>Szybkie polecenia (Narzędzia)</span></a><a href="#terminal"><i class="fa-solid fa-terminal"></i><span>Terminal</span></a><a href="#kopie"><i class="fa-solid fa-shield-halved"></i><span>Menu „Kopie” (zapasowe)</span></a><a href="#stopka"><i class="fa-solid fa-grip-lines"></i><span>Dolny pasek (stopka)</span></a><a href="#skroty"><i class="fa-solid fa-keyboard"></i><span>Skróty klawiszowe</span></a><a href="#scenariusze"><i class="fa-solid fa-route"></i><span>Gotowe scenariusze</span></a><a href="#problemy"><i class="fa-solid fa-life-ring"></i><span>Częste problemy</span></a><a href="#slownik"><i class="fa-solid fa-book"></i><span>Słowniczek</span></a></nav><main>
+<div class="lead">Ta pomoc wyjaśnia, <b>jak używać Edytora</b>, zwłaszcza gdy większość kodu pisze za Ciebie AI. Wybierz temat z listy po lewej albo wpisz słowo w wyszukiwarkę. Zaczynasz? Przeczytaj „Do czego służy Edytor?” oraz „Przegląd zmian”.</div>
+<section id="cel"><h2><i class="fa-solid fa-bullseye"></i>Do czego służy Edytor?</h2>
+<p><b>MrPrompt Edytor</b> to program do <b>zaglądania w kod i poprawiania go</b>, działający w przeglądarce, tuż obok Twojego panelu projektów.</p>
+<p>Dziś większość kodu tworzy AI. Twoja rola zmieniła się z „piszę kod” na „<b>sprawdzam, czy AI zrobiło to, o co prosiłem, i niczego nie zepsuło</b>”. Edytor pomaga właśnie w tym:</p>
+<ol>
+<li><b>Widzisz, co AI zmieniło</b> (porównanie „przed” i „po”, plik po pliku).</li>
+<li><b>Cofasz to, co się nie podoba</b>, jednym kliknięciem.</li>
+<li><b>Zapisujesz dobry stan</b> (commit), żeby móc do niego wrócić.</li>
+<li><b>Widzisz zmiany od razu</b>, bo otwarte pliki odświeżają się same.</li>
+<li><b>Przygotowujesz materiały dla AI</b> (paczka plików do wklejenia do czatu, plik z zasadami).</li>
+</ol>
+<div class="note">Nie ma tu sztucznej inteligencji. Edytor nie pisze kodu, tylko pomaga kontrolować kod napisany gdzie indziej. Do dłuższej ręcznej pracy nadal wygodniejszy będzie klasyczny edytor (np. VS Code).</div></section>
+<section id="ekran"><h2><i class="fa-solid fa-table-columns"></i>Jak wygląda ekran</h2>
+<div class="map">
+<div><b>Górny pasek (menu)</b>Plik, Edycja, Widok, Narzędzia, Terminal, Kopie, Pomoc, O Aplikacji. Obok ikony szybkich akcji.</div>
+<div><b>Lewy panel: Eksplorator</b>Drzewo plików otwartego folderu. Kliknięcie pliku otwiera go w karcie.</div>
+<div><b>Środek: karty i edytor</b>Otwarte pliki jako karty u góry. Kropka <b>●</b> przy nazwie = plik ma niezapisane zmiany.</div>
+<div><b>Prawa część (opcjonalnie)</b>Podgląd strony na żywo lub terminal.</div>
+<div><b>Dolny pasek (stopka)</b>Gałąź Gita i liczba zmian, liczba błędów i ostrzeżeń, pozycja kursora, język pliku.</div>
+</div></section>
+<section id="start"><h2><i class="fa-solid fa-folder-open"></i>Otwieranie folderu i plików</h2>
+<h3>Najlepiej: otwórz folder projektu</h3>
+<ol>
+<li>Menu <b>Plik → Otwórz folder…</b> (albo ikona folderu na górze).</li>
+<li>W okienku przechodź po folderach i wybierz ten, w którym jest Twój projekt. Kliknij wybór.</li>
+<li>Po lewej pojawi się drzewo plików. Kliknij plik, aby go otworzyć. Foldery rozwijasz strzałką.</li>
+</ol>
+<p>Program zapamiętuje ostatnio otwarty projekt i przy następnym uruchomieniu otworzy go sam.</p>
+<h3>Otwieranie pojedynczego pliku</h3>
+<p><b>Plik → Otwórz plik…</b> (<kbd>Ctrl</kbd>+<kbd>O</kbd>) pozwala wskazać plik z dysku albo możesz go <b>przeciągnąć</b> na okno Edytora.</p>
+<div class="warn">Plik otwarty tym sposobem <b>nie „pamięta”, gdzie leży na dysku</b>. Przy zapisie program zapyta o folder i nazwę. Aby zapisywać w to samo miejsce i korzystać z auto-odświeżania, otwieraj pliki <b>z drzewa po lewej</b>.</div>
+<h3>Z listy projektów w panelu</h3>
+<p>W lewej kolumnie panelu głównego kliknij <b>prawym przyciskiem</b> folder lub plik i wybierz <b>Otwórz w Edytorze</b>: Edytor otworzy się od razu na tym projekcie lub pliku.</p>
+<h3>Z pulpitu panelu</h3>
+<p>Na stronie startowej kliknięcie ostatnio zmienianego pliku otwiera go tutaj razem z jego projektem. Ikona <i class="fa-solid fa-code-compare"></i> na karcie projektu otwiera od razu <b>Przegląd zmian</b>.</p></section>
+<section id="karty"><h2><i class="fa-solid fa-file-code"></i>Karty, edycja i zapisywanie</h2>
+<ul>
+<li><b>Nowy plik:</b> <b>Plik → Nowy plik</b> albo ikona lub plus obok kart.</li>
+<li><b>Zapisz:</b> <kbd>Ctrl</kbd>+<kbd>S</kbd>. Plik z drzewa zapisze się w swoim miejscu. Nowy plik: pojawi się okienko wyboru folderu i nazwy (<b>Zapisz jako…</b>).</li>
+<li><b>Zamknij kartę:</b> krzyżyk na karcie albo <b>Plik → Zamknij kartę</b>.</li>
+<li><b>Kolorowanie składni</b> włącza się samo (PHP, JavaScript, CSS, HTML, JSON, Markdown i inne). Aktualny język widać w stopce.</li>
+<li>Edytor podpowiada słowa podczas pisania.</li>
+</ul>
+<h3>Menu „Edycja”</h3>
+<p>Cofnij (<kbd>Ctrl</kbd>+<kbd>Z</kbd>), Ponów (<kbd>Ctrl</kbd>+<kbd>Y</kbd>), Wytnij / Kopiuj / Wklej, <b>Znajdź</b> (<kbd>Ctrl</kbd>+<kbd>F</kbd>) i <b>Zamień</b> (<kbd>Ctrl</kbd>+<kbd>H</kbd>) w bieżącym pliku.</p>
+<div class="note">Karta z kropką ● ma zmiany, których nie zapisałeś na dysk. Zapisz je, jeśli chcesz je zachować.</div></section>
+<section id="eksplorator"><h2><i class="fa-solid fa-folder-tree"></i>Eksplorator: prawy przycisk myszy</h2>
+<p>Kliknij <b>prawym przyciskiem</b> plik lub folder w lewym panelu:</p>
+<table>
+<tr><th>Polecenie</th><th>Efekt</th></tr>
+<tr><td>Nowy plik… / Nowy folder…</td><td>Tworzy nowy element w klikniętym folderze (albo obok klikniętego pliku). Wpisz nazwę i kliknij „Utwórz”. Nowy <b>plik otwiera się od razu</b> w karcie. Istniejącego pliku program nie nadpisze.</td></tr>
+<tr><td>Zmień nazwę</td><td>Zmienia nazwę pliku lub folderu.</td></tr>
+<tr><td>Wykonaj kopię</td><td>Zapisuje kopię <b>folderu</b> w folderze kopii zapasowych (najpierw skonfiguruj: menu <b>Kopie → Ustawienia</b>).</td></tr>
+<tr><td>Pobierz</td><td>Pobiera plik na dysk (tylko pliki).</td></tr>
+<tr><td>Usuń</td><td>Usuwa na stałe, po potwierdzeniu.</td></tr>
+</table>
+<h3>Ikony w nagłówku Eksploratora</h3>
+<ul>
+<li><i class="fa-solid fa-file-circle-plus"></i> <b>Nowy plik</b> i <i class="fa-solid fa-folder-plus"></i> <b>Nowy folder</b>: tworzą element w głównym otwartym folderze (żeby utworzyć go głębiej, kliknij prawym przyciskiem odpowiedni folder).</li>
+<li><i class="fa-solid fa-rotate"></i> <b>Odśwież</b>: ponownie wczytuje drzewo (np. gdy AI dodało nowe pliki).</li>
+</ul>
+<div class="note">Zasady nazw: bez znaków <code>&lt; &gt; : " / \ | ? *</code>, bez kropki lub spacji na końcu i bez nazw zastrzeżonych przez Windows (CON, NUL…). Jeśli nazwa jest zajęta lub niedozwolona, okienko pokaże powód i pozwoli ją poprawić.</div></section>
+<section id="szukanie"><h2><i class="fa-solid fa-magnifying-glass"></i>Szukanie w wielu plikach</h2>
+<ol>
+<li>Naciśnij <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> albo kliknij lupę na górnym pasku.</li>
+<li>Wpisz frazę (zaznaczony w pliku tekst wstawi się sam) i kliknij <b>Szukaj</b>.</li>
+<li>Zobaczysz listę: nazwa pliku, numer linii i fragment. Kliknięcie otwiera plik.</li>
+</ol>
+<p>Szukanie obejmuje pliki tekstowe (PHP, JS, HTML, CSS, TXT, JSON, MD, XML, SQL) w otwartym folderze i pomija <code>node_modules</code>, <code>vendor</code>, <code>.git</code>. Pokazuje maksymalnie 100 wyników.</p>
+<div class="tip">Świetne do pytania „gdzie w tym projekcie jest użyta ta funkcja?”, zanim poprosisz AI o zmianę.</div></section>
+<section id="widok"><h2><i class="fa-solid fa-eye"></i>Menu Widok i podgląd na żywo</h2>
+<ul>
+<li><b>Pasek boczny</b>: chowa lub pokazuje Eksplorator (więcej miejsca na kod).</li>
+<li><b>Zawijanie wierszy</b>: długie linie zawijają się zamiast wychodzić poza ekran.</li>
+<li><b>Podgląd na żywo</b>: po prawej stronie pokazuje, jak wygląda strona.
+  <ul><li>Dla plików <b>HTML</b>: podgląd na bieżąco z tego, co wpisujesz.</li>
+  <li>Dla plików <b>PHP</b>: strona uruchamia się przez serwer (<code>localhost</code>), więc plik musi być <b>zapisany</b> i leżeć w <code>htdocs</code>.</li></ul></li>
+</ul>
+<div class="tip">Gdy AI zmienia plik na dysku, otwarta karta odświeża się sama, a podgląd przeładowuje się razem z nią. Możesz patrzeć na efekt bez klikania.</div></section>
+<section id="przeglad"><h2><i class="fa-solid fa-code-compare"></i>Przegląd zmian: co AI zmieniło? (najważniejsze)</h2>
+<p>To główna funkcja Edytora. Otwierasz ją: <b>Narzędzia → Przegląd zmian</b>, klawiszem <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>, ikoną <i class="fa-solid fa-code-compare"></i> na górnym pasku albo <b>klikając liczbę zmian w stopce</b> (np. „master 5”).</p>
+<h3>Zanim zaczniesz: zapamiętaj stan „przed”</h3>
+<p>Aby porównanie miało sens, program musi wiedzieć, jak kod wyglądał <b>przed</b> pracą AI. Są dwie drogi:</p>
+<ul>
+<li><b>Git</b> (zalecane): jeśli folder nie ma jeszcze Gita, panel pokaże przycisk <b>„Zainicjuj repozytorium git”</b>. Kliknij: program zapisze obecny stan jako punkt startowy. Robisz to raz na projekt.</li>
+<li><b>Kopia zapasowa</b>: wskaż folder kopii w menu <b>Kopie → Ustawienia</b>, potem kliknij <b>prawym przyciskiem folder projektu → Wykonaj kopię</b>. W panelu wybierz ją z listy u góry: „Kopia zapasowa z …”.</li>
+</ul>
+<h3>Jak przeglądać zmiany</h3>
+<ol>
+<li>Po lewej jest <b>lista zmienionych plików</b>. Litera przy pliku mówi, co się stało:
+<table>
+<tr><td><b>M</b> (żółta)</td><td>plik zmieniony</td></tr>
+<tr><td><b>A</b> lub <b>?</b> (zielona)</td><td>plik nowy</td></tr>
+<tr><td><b>D</b> (czerwona)</td><td>plik usunięty</td></tr>
+</table></li>
+<li>Kliknij plik (albo użyj strzałek ↑↓). Po prawej zobaczysz porównanie: <b>po lewej stronie to, co było</b>, <b>po prawej to, co jest teraz</b>. Czerwone linie zostały usunięte, zielone dodane.</li>
+<li>Pole <b>„Filtruj pliki…”</b> pomaga znaleźć konkretny plik. Przycisk <i class="fa-solid fa-table-columns"></i> przełącza widok obok siebie / w jednej kolumnie.</li>
+</ol>
+<h3>Co możesz zrobić z plikiem</h3>
+<table>
+<tr><th>Przycisk</th><th>Efekt</th></tr>
+<tr><td><b>Otwórz w edytorze</b></td><td>Zamyka panel i otwiera plik w karcie, żebyś mógł go poprawić ręcznie.</td></tr>
+<tr><td><b>Cofnij zmiany</b></td><td>Przywraca plik do stanu z ostatniego zapisu (lub z kopii zapasowej). Nowy plik zostanie usunięty. Program zawsze zapyta o potwierdzenie.</td></tr>
+</table>
+<div class="warn">„Cofnij zmiany” <b>kasuje</b> zmiany w tym pliku (także Twoje ręczne). Nie da się tego cofnąć, chyba że wcześniej je zatwierdziłeś.</div>
+<h3>Zatwierdzanie (commit): zapisanie dobrego stanu</h3>
+<ol>
+<li>Przy plikach są <b>kwadraciki</b>. Zostaw zaznaczone te, które chcesz zapisać (przycisk „wszystkie” na dole listy zaznacza lub odznacza wszystko).</li>
+<li>Kliknij pomarańczowy <b>„Zatwierdź”</b>, wpisz krótki opis (np. „Dodano wyszukiwarkę projektów”) i potwierdź.</li>
+<li>Lista zmian się wyczyści. Ten stan jest już Twoim nowym „punktem powrotu”.</li>
+</ol>
+<div class="tip"><b>Dobry rytm pracy z AI:</b> (1) zatwierdź stan, który działa → (2) poproś AI o zmianę → (3) otwórz Przegląd zmian i sprawdź → (4) cofnij to, co niechciane → (5) zatwierdź dobre. Dzięki temu nigdy nie zgubisz działającej wersji.</div>
+<div class="note">Panel obsługuje pliki tekstowe do ok. 1,5 MB. Pliki binarne (obrazy itp.) i bardzo duże pokażą tylko informację, że nie można ich porównać.</div></section>
+<section id="auto"><h2><i class="fa-solid fa-rotate"></i>Karty odświeżają się same</h2>
+<p>Gdy inny program (np. AI w innym oknie) zmieni plik, który masz otwarty w Edytorze, <b>Edytor to zauważa w ciągu około 2 sekund</b>:</p>
+<ul>
+<li>Jeśli nie masz w tej karcie niezapisanych zmian: treść <b>odświeża się sama</b>, kursor zostaje na miejscu, a zmienione linie <b>na chwilę podświetlają się na bursztynowo</b>. Na karcie pojawi się mała ikona odświeżenia.</li>
+<li>Jeśli masz własne niezapisane zmiany: pojawi się <b>baner w prawym górnym rogu</b> z wyborem: <b>„Wczytaj z dysku”</b> (Twoje zmiany przepadną) albo <b>„Zachowaj moją wersję”</b>. Nic nie zniknie bez Twojej zgody.</li>
+<li>Jeśli włączony jest podgląd na żywo, przeładuje się razem z plikiem.</li>
+</ul>
+<p>Twój własny zapis (<kbd>Ctrl</kbd>+<kbd>S</kbd>) nie wywołuje tej reakcji.</p></section>
+<section id="paczka"><h2><i class="fa-solid fa-box-archive"></i>Paczka kontekstu dla AI</h2>
+<p>Gdy rozmawiasz z AI w czacie, które <b>nie widzi Twoich plików</b>, musisz mu je pokazać. Zamiast kopiować pliki po jednym, użyj: <b>Narzędzia → Paczka kontekstu dla AI…</b></p>
+<ol>
+<li>Zobaczysz listę plików projektu (bez ignorowanych przez Git i bez ciężkich folderów). Małe projekty zaznaczają się od razu.</li>
+<li>Zaznacz to, co ma trafić do AI. Pomocne przyciski: <b>Tylko kod</b>, <b>Tylko zmienione</b> (pliki zmienione od ostatniego zapisu Gita), <b>Wyczyść</b>, pole <b>Filtruj</b>.</li>
+<li>Na dole widzisz liczbę plików i <b>szacunkową liczbę tokenów</b> (tokeny to „jednostki tekstu” liczone przez AI; im ich więcej, tym drożej i tym większe ryzyko, że AI się zgubi). Żółte lub czerwone ostrzeżenie = za dużo, zawęź wybór.</li>
+<li>Kliknij <b>Kopiuj do schowka</b> i wklej w czat. Możesz też <b>Pobrać .md</b> albo <b>Otworzyć w karcie</b>.</li>
+</ol>
+<h3>Ochrona sekretów</h3>
+<ul>
+<li>Pliki takie jak <code>.env</code>, klucze (<code>.pem</code>, <code>.key</code>), <code>id_rsa</code>, pliki z „secret” lub „credentials” w nazwie są <b>wykluczone</b> (szare, nie do zaznaczenia).</li>
+<li>W treści plików wartości typu <code>api_key = "abc..."</code> lub <code>password: "..."</code> są <b>zastępowane napisem *** REDACTED ***</b>. Po skopiowaniu program powie, ile takich miejsc zamaskował.</li>
+</ul>
+<div class="warn">Maskowanie łapie tylko oczywiste przypadki. Zanim wkleisz coś do zewnętrznego czatu, rzuć okiem, czy nie ma tam danych osobowych albo haseł zapisanych w inny sposób.</div></section>
+<section id="aipliki"><h2><i class="fa-solid fa-scroll"></i>Pliki sterujące AI (CLAUDE.md i inne)</h2>
+<p>Wiele narzędzi AI czyta z projektu specjalne pliki z zasadami, np. <code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>.cursorrules</code>. Wpisujesz tam raz: „pisz po polsku”, „nie ruszaj tego katalogu”, „przetestuj po zmianie”. AI stosuje to przy każdej pracy. Dobrze napisane zasady oznaczają <b>mniej poprawek</b> później.</p>
+<p>Menu <b>Narzędzia → Pliki sterujące AI</b>:</p>
+<ul>
+<li>pokazuje, które takie pliki masz w projekcie (także w folderach <code>.claude</code>, <code>prompts</code>, <code>docs</code>) i pozwala je <b>otworzyć</b>,</li>
+<li>jeśli brakuje <code>CLAUDE.md</code> lub <code>AGENTS.md</code>, oferuje <b>„Utwórz”</b> z gotowego szablonu po polsku, który potem uzupełniasz.</li>
+</ul></section>
+<section id="polecenia"><h2><i class="fa-solid fa-terminal"></i>Szybkie polecenia (Narzędzia)</h2>
+<p>Jedno kliknięcie zamiast wpisywania poleceń. Wynik pokaże się w okienku: zielony pasek z boku = w porządku, czerwony = problem.</p>
+<table>
+<tr><th>Polecenie</th><th>Po co</th></tr>
+<tr><td><b>Sprawdź składnię PHP (bieżący plik)</b></td><td>Czy AI nie zostawiło literówki, która wywali stronę białym ekranem. Plik musi być zapisany.</td></tr>
+<tr><td><b>Sprawdź składnię PHP (cały projekt)</b></td><td>To samo dla wszystkich plików PHP (do 400 plików). Pokazuje tylko błędy.</td></tr>
+<tr><td><b>Git: status</b></td><td>Krótka lista zmienionych plików.</td></tr>
+<tr><td><b>Git: ostatnie commity</b></td><td>20 ostatnich zapisanych punktów (Twoja historia zmian).</td></tr>
+<tr><td><b>npm test</b></td><td>Uruchamia testy projektu Node.js (jeśli ma plik <code>package.json</code>).</td></tr>
+</table>
+<div class="tip">Po każdej większej zmianie od AI uruchom „Sprawdź składnię PHP (cały projekt)”: zajmuje kilka sekund, a oszczędza szukania błędów.</div></section>
+<section id="terminal"><h2><i class="fa-solid fa-terminal"></i>Terminal</h2>
+<p>Menu <b>Terminal</b> otwiera na dole okno wiersza poleceń. Wpisujesz polecenia Windows (np. <code>dir</code>, <code>git status</code>, <code>php -v</code>) i naciskasz <kbd>Enter</kbd>. Polecenie <code>cls</code> czyści ekran, <code>cd folder</code> zmienia folder.</p>
+<div class="note">Każde polecenie działa osobno i kończy się samo. Programy, które czekają na Twoje odpowiedzi w trakcie działania (interaktywne), tu nie zadziałają. Do nich użyj zwykłego okna CMD (przycisk <b>CMD</b> w panelu głównym).</div>
+<div class="warn">Terminal wykonuje polecenia <b>na Twoim komputerze</b> z Twoimi uprawnieniami. Wpisuj tylko to, co rozumiesz. Od wersji 4.0 chroni go token, więc obce strony nie mogą go użyć.</div></section>
+<section id="kopie"><h2><i class="fa-solid fa-shield-halved"></i>Menu „Kopie” (zapasowe)</h2>
+<ul>
+<li><b>Kopie → Ustawienia</b>: wskaż folder, w którym mają lądować kopie zapasowe (np. <code>C:/xampp/htdocs/backups</code>).</li>
+<li><b>Kopie → Przeglądaj</b>: lista zapisanych kopii. Można usuwać stare.</li>
+<li>Kopię projektu robisz prawym przyciskiem na folderze w Eksploratorze → <b>Wykonaj kopię</b>. Nazwa zawiera datę i godzinę.</li>
+</ul>
+<div class="tip">Kopie zapasowe działają też jako „punkt porównania” w Przeglądzie zmian, jeśli nie używasz Gita.</div></section>
+<section id="stopka"><h2><i class="fa-solid fa-grip-lines"></i>Dolny pasek (stopka)</h2>
+<table>
+<tr><th>Element</th><th>Znaczenie</th></tr>
+<tr><td><b>Gałąź Git</b> (np. „master” z białą liczbą)</td><td>Nazwa gałęzi i <b>liczba zmienionych plików</b>. Kliknij, aby otworzyć Przegląd zmian. Myślnik „—” = folder nie jest repozytorium.</td></tr>
+<tr><td>Ikony błędów i ostrzeżeń</td><td>Liczba problemów wykrytych w bieżącym pliku (np. literówka w składni).</td></tr>
+<tr><td>Ln, Col</td><td>Numer linii i kolumny, w której jest kursor.</td></tr>
+<tr><td>UTF-8, język</td><td>Kodowanie i rodzaj pliku (PHP, JS…).</td></tr>
+</table></section>
+<section id="skroty"><h2><i class="fa-solid fa-keyboard"></i>Skróty klawiszowe</h2>
+<table>
+<tr><th>Skrót</th><th>Efekt</th></tr>
+<tr><td><kbd>F1</kbd></td><td>Ta pomoc</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Zapisz plik</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Otwórz plik z dysku</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd></td><td>Przegląd zmian</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td>Szukaj w plikach projektu</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>Szukaj w bieżącym pliku</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>H</kbd></td><td>Znajdź i zamień w bieżącym pliku</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Cofnij / ponów</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Zamyka okna (np. Przegląd zmian)</td></tr>
+<tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>W Przeglądzie zmian: następny / poprzedni plik</td></tr>
+</table>
+<p>Menu z etykietami <kbd>Ctrl</kbd>+<kbd>N</kbd> lub <kbd>Ctrl</kbd>+<kbd>W</kbd> działa po kliknięciu. Niektóre przeglądarki zarezerwowały te skróty dla siebie.</p></section>
+<section id="scenariusze"><h2><i class="fa-solid fa-route"></i>Gotowe scenariusze</h2>
+<h3>A. „Poprosiłem AI o zmianę. Jak to sprawdzić?”</h3>
+<ol>
+<li>Otwórz Edytor i wybierz folder projektu (jeśli jeszcze nie jest otwarty).</li>
+<li>Spójrz na stopkę: pojawi się liczba zmienionych plików.</li>
+<li>Kliknij ją (lub <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>). Przejrzyj pliki po kolei.</li>
+<li>Uruchom <b>Narzędzia → Sprawdź składnię PHP (cały projekt)</b>.</li>
+<li>Sprawdź w przeglądarce, czy strona działa. Jeśli tak, <b>Zatwierdź</b>. Jeśli nie, <b>Cofnij zmiany</b> w wybranych plikach.</li>
+</ol>
+<h3>B. „Zaczynam pracę z AI na starym projekcie bez Gita”</h3>
+<ol>
+<li>Otwórz folder w Edytorze i wejdź w <b>Przegląd zmian</b>.</li>
+<li>Kliknij <b>„Zainicjuj repozytorium git”</b>. Zapisze się stan początkowy (dodatkowo powstanie plik <code>.gitignore</code>, jeśli go nie było).</li>
+<li>Zlecaj pracę AI i wracaj do kroku A.</li>
+</ol>
+<h3>C. „Chcę pokazać AI kawałek projektu w czacie”</h3>
+<ol>
+<li><b>Narzędzia → Paczka kontekstu dla AI…</b></li>
+<li>Kliknij <b>Tylko zmienione</b> lub zaznacz potrzebne pliki. Sprawdź licznik tokenów.</li>
+<li><b>Kopiuj do schowka</b> i wklej w czat.</li>
+</ol>
+<h3>D. „AI działa w drugim oknie, a ja chcę patrzeć na efekt”</h3>
+<ol>
+<li>Otwórz plik z drzewa (nie przez „Otwórz plik…”).</li>
+<li>Włącz <b>Widok → Podgląd na żywo</b> (dla HTML/PHP).</li>
+<li>Gdy AI zapisze plik, karta i podgląd odświeżą się same, a zmienione linie zamigają na bursztynowo.</li>
+</ol>
+<h3>F. „Chcę dodać nowy plik lub folder do projektu”</h3>
+<ol>
+<li>W Eksploratorze kliknij <b>prawym przyciskiem</b> folder, w którym ma powstać nowy element (albo użyj ikon <i class="fa-solid fa-file-circle-plus"></i> / <i class="fa-solid fa-folder-plus"></i> w nagłówku, żeby dodać go w głównym folderze).</li>
+<li>Wybierz <b>Nowy plik…</b> lub <b>Nowy folder…</b>, wpisz nazwę i kliknij „Utwórz”.</li>
+<li>Nowy plik otworzy się w karcie: możesz od razu w nim pisać i zapisać go <kbd>Ctrl</kbd>+<kbd>S</kbd>.</li>
+</ol>
+<h3>E. „Boję się dużej zmiany”</h3>
+<p>Przed prośbą do AI zrób <b>kopię</b> (prawy przycisk na folderze → Wykonaj kopię) i/lub <b>zatwierdź</b> obecny stan. Wtedy zawsze wrócisz.</p></section>
+<section id="problemy"><h2><i class="fa-solid fa-life-ring"></i>Częste problemy</h2>
+<h3>„Nieprawidłowy token” lub „Żądanie zablokowane”</h3><p>Odśwież stronę (<kbd>Ctrl</kbd>+<kbd>F5</kbd>). To zabezpieczenie przed obcymi stronami.</p>
+<h3>Przegląd zmian pokazuje „Ten folder nie jest repozytorium git”</h3><p>Kliknij „Zainicjuj repozytorium git” albo wybierz kopię zapasową z listy u góry panelu.</p>
+<h3>Stopka pokazuje „—” zamiast gałęzi</h3><p>Otwarty folder nie ma Gita lub Git nie jest zainstalowany na komputerze.</p>
+<h3>„Zatwierdź” zgłasza błąd</h3><p>Czasem Git nie ma ustawionego imienia autora. Program używa wtedy domyślnego („MrPrompt”). Jeśli błąd dotyczy czegoś innego, przeczytaj komunikat: zwykle podaje przyczynę (np. brak zmian do zapisania).</p>
+<h3>Karta się nie odświeża po zmianie przez AI</h3><p>Odświeżają się tylko pliki <b>otwarte z drzewa po lewej</b> (mają znaną ścieżkę na dysku) i tylko gdy okno przeglądarki jest aktywne. Sprawdź, czy karta nie ma kropki ● (wtedy pojawi się baner z pytaniem).</p>
+<h3>Podgląd PHP jest pusty</h3><p>Zapisz plik i upewnij się, że leży w <code>htdocs</code> oraz że Apache działa.</p>
+<h3>Nie widzę pliku po lewej</h3><p>Kliknij ikonę odświeżania w nagłówku Eksploratora.</p></section>
+<section id="slownik"><h2><i class="fa-solid fa-book"></i>Słowniczek</h2>
+<table>
+<tr><th>Pojęcie</th><th>Wyjaśnienie</th></tr>
+<tr><td><b>Git</b></td><td>Program, który zapamiętuje kolejne wersje Twojego kodu, jak „historia zmian” w dokumencie, ale dla całego projektu.</td></tr>
+<tr><td><b>Repozytorium</b></td><td>Folder projektu objęty przez Git.</td></tr>
+<tr><td><b>Commit (zatwierdzenie)</b></td><td>Zapisany punkt w historii, do którego zawsze można wrócić.</td></tr>
+<tr><td><b>Diff (porównanie)</b></td><td>Widok „przed i po”: czerwone linie usunięte, zielone dodane.</td></tr>
+<tr><td><b>Gałąź (branch)</b></td><td>Równoległa wersja projektu. Zwykle „main” lub „master”.</td></tr>
+<tr><td><b>Token (w kontekście AI)</b></td><td>Jednostka tekstu liczona przez AI (mniej więcej 3–4 znaki). Limit tokenów to maksymalna długość rozmowy.</td></tr>
+<tr><td><b>Kontekst</b></td><td>Wszystko, co AI „widzi” w danej chwili: Twoja wiadomość i wklejone pliki.</td></tr>
+<tr><td><b>Składnia</b></td><td>Poprawność zapisu kodu. Błąd składni (np. brak średnika) zatrzymuje działanie strony.</td></tr>
+<tr><td><b>Linter</b></td><td>Wbudowany „korektor” kodu: podkreśla podejrzane miejsca. Jego licznik jest w stopce.</td></tr>
+<tr><td><b>Podgląd na żywo</b></td><td>Okno pokazujące, jak wygląda strona, odświeżane po zmianach.</td></tr>
+</table></section>
+<div class="empty" id="none"><i class="fa-regular fa-face-frown"></i><br>Nic nie znaleziono. Spróbuj innego słowa.</div>
+<footer>MrPrompt Edytor · część MrPrompt Server 4.0 · <a href="https://mrprompt.eu/" target="_blank" rel="noopener">mrprompt.eu</a></footer>
+</main></div><script>
+const secs=[...document.querySelectorAll('main section')];
+const links=[...document.querySelectorAll('nav a')];
+const q=document.getElementById('q');
+q.addEventListener('input',()=>{
+  const t=q.value.trim().toLowerCase();
+  let n=0;
+  secs.forEach((s,i)=>{const ok=!t||s.innerText.toLowerCase().includes(t);s.classList.toggle('hide',!ok);links[i].classList.toggle('hide',!ok);if(ok)n++;});
+  document.querySelector('.lead').classList.toggle('hide',!!t);
+  document.getElementById('none').style.display=n?'none':'block';
+});
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle('on',l.getAttribute('href')==='#'+e.target.id));}});},{rootMargin:'-20% 0px -70% 0px'});
+secs.forEach(s=>io.observe(s));
+if(window.top!==window&&document.title.indexOf('Edytor')>-1){document.querySelector('.top h1').style.display='none';}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='f'){e.preventDefault();q.focus();}});
+</script></body></html>

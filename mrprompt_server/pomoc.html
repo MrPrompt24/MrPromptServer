@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomoc: MrPrompt Server 4.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{--bg:#1e1e1e;--panel:#252526;--card:#2b2b2d;--border:#3d3d3d;--text:#d4d4d4;--muted:#9a9a9a;--bright:#fff;--accent:#b87a00;--accent2:#d18f0a;--green:#4ec994;--red:#f44747}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.7 'Inter','Segoe UI',system-ui,sans-serif}
+a{color:var(--accent2)}
+.top{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:10px 20px;flex-wrap:wrap}
+.top h1{font-size:16px;margin:0;color:var(--bright);font-weight:600;display:flex;gap:9px;align-items:center}
+.top h1 i{color:var(--accent2)}
+.top .sp{flex:1}
+.top input{background:#3c3c3c;border:1px solid transparent;color:var(--text);padding:8px 12px;border-radius:6px;font-size:13px;width:280px;max-width:100%;outline:none;font-family:inherit}
+.top input:focus{border-color:var(--accent)}
+.btn{background:#3c3c3c;color:var(--text);border:1px solid #4a4a4a;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.btn:hover{background:#4a4a4a;color:#fff}
+.wrap{display:flex;max-width:1180px;margin:0 auto}
+nav{width:270px;flex-shrink:0;position:sticky;top:57px;align-self:flex-start;max-height:calc(100vh - 57px);overflow-y:auto;padding:18px 10px 30px 20px;border-right:1px solid var(--border)}
+nav a{display:flex;gap:9px;align-items:baseline;padding:6px 10px;border-radius:6px;color:var(--muted);text-decoration:none;font-size:13px;line-height:1.35}
+nav a:hover{background:#2a2d2e;color:var(--text)}
+nav a.on{background:#37373d;color:#fff}
+nav a i{width:16px;text-align:center;color:var(--accent2);flex-shrink:0}
+main{flex:1;min-width:0;padding:26px 34px 80px}
+.lead{font-size:16px;color:var(--text);background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:16px 20px;margin-bottom:26px}
+section{margin-bottom:44px;scroll-margin-top:72px}
+h2{font-size:22px;color:var(--bright);margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center}
+h2 i{color:var(--accent2);font-size:19px}
+h3{font-size:15px;color:#f0b84a;margin:22px 0 6px}
+p{margin:8px 0}
+ul,ol{margin:8px 0 8px 0;padding-left:24px}
+li{margin:4px 0}
+kbd{background:#1a1a1a;border:1px solid #555;border-bottom-width:2px;border-radius:4px;padding:0 6px;font:12px 'JetBrains Mono',Consolas,monospace;color:#eee;white-space:nowrap}
+code{background:#1a1a1a;border-radius:4px;padding:1px 6px;font:13px 'JetBrains Mono',Consolas,monospace;color:#e2b76a}
+.tip,.warn,.note{border-radius:8px;padding:12px 16px;margin:14px 0;font-size:14px;border:1px solid}
+.tip{background:rgba(78,201,148,.08);border-color:rgba(78,201,148,.35)}
+.tip::before{content:'Wskazówka: ';font-weight:700;color:var(--green)}
+.warn{background:rgba(244,71,71,.08);border-color:rgba(244,71,71,.4)}
+.warn::before{content:'Uwaga: ';font-weight:700;color:var(--red)}
+.note{background:rgba(184,122,0,.1);border-color:rgba(184,122,0,.4)}
+.note::before{content:'Dobrze wiedzieć: ';font-weight:700;color:var(--accent2)}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel);color:var(--bright);font-weight:600}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:14px 0}
+.map div{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13.5px}
+.map b{display:block;color:#fff;margin-bottom:3px}
+.hide{display:none!important}
+.empty{display:none;padding:30px;text-align:center;color:var(--muted)}
+footer{border-top:1px solid var(--border);padding:20px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:820px){nav{display:none}main{padding:20px 16px 60px}}
+@media print{.top,nav{display:none}body{background:#fff;color:#000}h2,h3{color:#000}}
+</style></head><body>
+<div class="top"><h1><i class="fa-solid fa-circle-question"></i>Pomoc: MrPrompt Server 4.0</h1><div class="sp"></div>
+<input id="q" type="search" placeholder="Szukaj w pomocy… (Ctrl+F)" autocomplete="off">
+<button class="btn" onclick="window.print()"><i class="fa-solid fa-print"></i> Drukuj</button></div>
+<div class="wrap"><nav><a href="#start"><i class="fa-solid fa-flag-checkered"></i><span>Zacznij tutaj: co to jest?</span></a><a href="#pulpit"><i class="fa-solid fa-house"></i><span>Strona startowa (pulpit)</span></a><a href="#lista"><i class="fa-solid fa-folder-tree"></i><span>Lista projektów (lewy panel)</span></a><a href="#projekt"><i class="fa-solid fa-clipboard-list"></i><span>Karta projektu: opis, notatki, zadania</span></a><a href="#aplikacje"><i class="fa-solid fa-table-cells-large"></i><span>Menu „Aplikacje” (dolny pasek)</span></a><a href="#diagnostyka"><i class="fa-solid fa-stethoscope"></i><span>Diagnostyka: co się zepsuło?</span></a><a href="#kreator"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Nowy projekt: kreator</span></a><a href="#pasek"><i class="fa-solid fa-grip-lines"></i><span>Dolny pasek stanu</span></a><a href="#szukaj"><i class="fa-solid fa-magnifying-glass"></i><span>Szukaj wszędzie (Ctrl+K)</span></a><a href="#statystyki"><i class="fa-solid fa-chart-simple"></i><span>Statystyki Serwera</span></a><a href="#edytor"><i class="fa-solid fa-code"></i><span>Edytor kodu</span></a><a href="#md"><i class="fa-brands fa-markdown"></i><span>Czytnik MD (dokumenty Markdown)</span></a><a href="#json"><i class="fa-solid fa-code"></i><span>Czytnik JSON</span></a><a href="#inne"><i class="fa-solid fa-toolbox"></i><span>Pozostałe przyciski w górnym menu</span></a><a href="#indexdb"><i class="fa-solid fa-database"></i><span>Bazy IndexDB (podgląd, eksport, import)</span></a><a href="#skroty"><i class="fa-solid fa-keyboard"></i><span>Skróty klawiszowe</span></a><a href="#problemy"><i class="fa-solid fa-life-ring"></i><span>Częste problemy i rozwiązania</span></a><a href="#slownik"><i class="fa-solid fa-book"></i><span>Słowniczek</span></a></nav><main>
+<div class="lead">Ta pomoc opisuje <b>wszystkie funkcje</b> panelu MrPrompt Server 4.0 prostym językiem, krok po kroku. Wybierz temat z listy po lewej albo wpisz słowo w wyszukiwarkę u góry (na przykład „notatka”, „kopia”, „zadania”).</div>
+<section id="start"><h2><i class="fa-solid fa-flag-checkered"></i>Zacznij tutaj: co to jest?</h2>
+<p><b>MrPrompt Server</b> to Twój osobisty „panel sterowania” dla programów, które trzymasz w XAMPP na swoim komputerze. Zamiast szukać folderów w Eksploratorze Windows, masz jedno miejsce, w którym:</p>
+<ul>
+<li>widzisz <b>wszystkie swoje projekty</b> (foldery w <code>htdocs</code>) i szybko je znajdujesz,</li>
+<li>zapisujesz <b>notatki i listę zadań</b> do każdego projektu,</li>
+<li>otwierasz <b>edytor kodu, czytniki dokumentów</b> i inne narzędzia,</li>
+<li>tworzysz, zmieniasz nazwę i usuwasz <b>pliki oraz foldery</b> jednym kliknięciem prawego przycisku myszy,</li>
+<li>widzisz, <b>czy serwer działa</b> i jaką ma wersję PHP oraz bazy danych,</li>
+<li>masz pod ręką <b>skróty do swoich aplikacji</b>.</li>
+</ul>
+<div class="note">Wszystko działa <b>wyłącznie na Twoim komputerze</b> (adres <code>localhost</code>). Nic nie jest wysyłane do internetu. Internet jest potrzebny tylko do ładowania ikon i czcionek.</div>
+<h3>Jak wygląda ekran (mapa)</h3>
+<div class="map">
+<div><b>Lewa strona: lista projektów</b>Wyszukiwarka, filtry (Wszystkie / Ostatnie / Ulubione) i drzewo folderów.</div>
+<div><b>Góra: menu z narzędziami</b>Domek, Statystyki, Edytor, Czytniki, CMD i inne. Na końcu ikonka pomocy (ta strona).</div>
+<div><b>Środek: miejsce pracy</b>Tu pokazuje się pulpit startowy, karta projektu, statystyki lub czytnik.</div>
+<div><b>Dół: pasek stanu</b>Po lewej przycisk „Aplikacje” (jak Start w Windows), po prawej stan usług, miejsce na dysku i skróty. Opis w rozdziale „Dolny pasek stanu”.</div>
+</div></section>
+<section id="pulpit"><h2><i class="fa-solid fa-house"></i>Strona startowa (pulpit)</h2>
+<p>Wracasz do niej w każdej chwili, klikając <b>ikonkę domku</b> na początku górnego menu. Dzięki temu nie musisz odświeżać całej aplikacji.</p>
+<p>U góry widzisz powitanie, liczbę projektów oraz małe znaczniki stanu serwera:</p>
+<ul>
+<li><b>Apache</b> i <b>MariaDB</b>: zielona kropka = działa, czerwona = wyłączony (włączysz w panelu XAMPP).</li>
+<li><b>Wersja PHP</b> (np. 8.0.30).</li>
+<li><b>Procent zajętego dysku</b> (po najechaniu zobaczysz, ile GB jest wolne).</li>
+</ul>
+<p>Poniżej jest sześć sekcji:</p>
+<table>
+<tr><th>Sekcja</th><th>Co pokazuje i do czego służy</th></tr>
+<tr><td><b>Wróć do pracy</b></td><td>6 projektów, w których ostatnio coś zmieniałeś, wraz z opisem i czasem („22 min temu”). Kliknij kartę, aby otworzyć projekt. Ikona <i class="fa-solid fa-code-compare"></i> na karcie otwiera <b>Przegląd zmian</b> w Edytorze (zobacz, co AI zmieniło w kodzie).</td></tr>
+<tr><td><b>Zadania do zrobienia</b></td><td>Wszystkie niezałatwione zadania ze wszystkich projektów w jednym miejscu. <b>Zaznacz kwadracik</b>, gdy zadanie jest zrobione: zniknie z listy i zapisze się w projekcie. Kliknij nazwę projektu (niebieskawy tekst), aby do niego przejść.</td></tr>
+<tr><td><b>Do uporządkowania</b></td><td>Projekty, którym brakuje opisu, oraz takie, których nie ruszałeś ponad pół roku. Na górze są te, których niedawno używałeś, a nie mają opisu. Kliknij, aby dodać opis.</td></tr>
+<tr><td><b>Ulubione i przypięte</b></td><td>Twoje przypięte aplikacje (kafelki) i projekty oznaczone gwiazdką.</td></tr>
+<tr><td><b>Ostatnio zmieniane pliki</b></td><td>8 najświeższych plików. Kliknięcie otwiera plik w <b>Edytorze</b>. Mała strzałka obok otwiera go w przeglądarce.</td></tr>
+</table>
+<p>Przycisk <b>„Szukaj projektu lub aplikacji”</b> (albo skrót <kbd>Ctrl</kbd>+<kbd>K</kbd>) otwiera szybką wyszukiwarkę: zobacz rozdział „Szukaj wszędzie”.</p>
+<div class="tip">Pulpit ładuje się z pamięci podręcznej, więc jest szybki. Nowo zmieniony plik może pojawić się na liście z opóźnieniem do około 1,5 minuty.</div></section>
+<section id="lista"><h2><i class="fa-solid fa-folder-tree"></i>Lista projektów (lewy panel)</h2>
+<p>To Twój spis wszystkich folderów z <code>htdocs</code>. Foldery ukryte (zaczynające się od kropki) oraz ciężkie, techniczne (<code>node_modules</code>, <code>vendor</code>, <code>.git</code>) są pomijane.</p>
+<h3>Wyszukiwarka</h3>
+<p>Wpisz kilka liter nazwy, a lista zawęzi się do pasujących projektów. Działa razem z filtrami poniżej.</p>
+<h3>Filtry</h3>
+<ul>
+<li><b>Wszystkie</b>: pełna lista, alfabetycznie.</li>
+<li><b>Ostatnie</b>: projekty, w których coś zmieniło się w ostatnich <b>14 dniach</b>, od najnowszych. Liczy się także zmiana pliku głęboko w środku folderu.</li>
+<li><b>Ulubione</b>: tylko projekty oznaczone gwiazdką.</li>
+</ul>
+<h3>Przyciski „Odśwież” i „Nowy projekt”</h3>
+<p><b>Odśwież</b> przeładowuje całą aplikację (jak klawisz F5). Użyj, gdy dodałeś nowy folder poza panelem i nie widać go jeszcze na liście.</p>
+<p><b>+ Nowy projekt</b> uruchamia kreator zakładania projektu (opis w rozdziale „Nowy projekt: kreator”).</p>
+<h3>Przycisk pełnego widoku (dwie strzałki obok logo)</h3>
+<p>Poszerza lewy panel na ok. 80% ekranu i pokazuje przy każdym projekcie <b>opis i datę</b> założenia. Wygodne przy przeglądaniu dużej liczby projektów. Kliknij ponownie, aby wrócić.</p>
+<h3>Co oznaczają ikony przy projekcie</h3>
+<table>
+<tr><th>Ikona</th><th>Znaczenie</th></tr>
+<tr><td><b>▸</b> strzałka</td><td>Rozwija folder i pokazuje jego zawartość (ładowanie następuje dopiero po kliknięciu, dlatego aplikacja jest szybka).</td></tr>
+<tr><td>Nazwa folderu (kliknij)</td><td>Otwiera <b>kartę projektu</b> (opis, notatki, zadania).</td></tr>
+<tr><td>Żółty znaczek <b>i</b></td><td>Projekt ma zapisany opis. Najedź myszką, aby go zobaczyć w dymku.</td></tr>
+<tr><td>Ikona GitHub</td><td>Projekt ma podany adres repozytorium: kliknięcie otwiera go w nowej karcie.</td></tr>
+<tr><td>☆ gwiazdka (pojawia się po najechaniu)</td><td>Dodaje projekt do <b>ulubionych</b> (żółta = ulubiony).</td></tr>
+<tr><td><i class="fa-solid fa-trash"></i> kosz (po najechaniu)</td><td><b>Usuwa folder z dysku razem z zawartością.</b> Zawsze pojawia się pytanie o potwierdzenie.</td></tr>
+<tr><td>Zwykły plik na liście</td><td>Kliknięcie otwiera go <b>w przeglądarce</b> w nowej karcie (np. stronę HTML lub PHP).</td></tr>
+</table>
+<h3>Menu pod prawym przyciskiem myszy</h3>
+<p>Kliknij <b>prawym przyciskiem</b> dowolny folder lub plik na liście: pojawi się menu z poleceniami. Wybrany element jest w tym czasie obwiedziony bursztynową ramką, żebyś wiedział, którego dotyczy polecenie.</p>
+<table>
+<tr><th>Polecenie</th><th>Co robi</th></tr>
+<tr><td><b>Otwórz w Edytorze</b></td><td>Otwiera folder (jako projekt) lub plik w Edytorze, w nowej karcie.</td></tr>
+<tr><td><b>Otwórz w przeglądarce</b></td><td>(dla folderów) Otwiera stronę projektu pod adresem <code>localhost</code>.</td></tr>
+<tr><td><b>Czy projekt działa?</b></td><td>(dla folderów) Uruchamia kontrolę projektu: składnię PHP, odpowiedź strony, brakujące pliki i świeże błędy w logach.</td></tr>
+<tr><td><b>Audyt przed publikacją</b></td><td>(dla folderów) Szuka w projekcie typowych wpadek bezpieczeństwa, zanim wgrasz go na hosting.</td></tr>
+<tr><td><b>Nowy plik… / Nowy folder…</b></td><td>(dla folderów) Pojawi się okienko z propozycją nazwy: zmień ją i kliknij „Utwórz”. Nowy element pojawi się od razu na liście. Program <b>nigdy nie nadpisze</b> istniejącego pliku: jeśli nazwa jest zajęta, zapyta o inną.</td></tr>
+<tr><td><b>Zmień nazwę…</b></td><td>Zmienia nazwę pliku lub folderu. Ulubione i cała zawartość zostają zachowane.</td></tr>
+<tr><td><b>Kopiuj ścieżkę</b></td><td>Kopiuje pełną ścieżkę (np. <code>C:\xampp\htdocs\MojProjekt</code>) do schowka: wygodne do wklejenia w rozmowie z AI lub w terminalu.</td></tr>
+<tr><td><b>Otwórz w Eksploratorze Windows</b></td><td>Otwiera zwykłe okno Windows w tym miejscu (dla pliku zaznacza go na liście).</td></tr>
+<tr><td><b>Usuń…</b></td><td>Usuwa element z dysku po potwierdzeniu.</td></tr>
+</table>
+<p>Kliknięcie prawym przyciskiem w <b>pustym miejscu</b> listy pozwala założyć nowy plik lub folder bezpośrednio w <code>htdocs</code> albo otworzyć <code>htdocs</code> w Eksploratorze Windows.</p>
+<div class="note">Zasady nazw: bez znaków <code>&lt; &gt; : " / \ | ? *</code>, bez kropki lub spacji na końcu i bez nazw zastrzeżonych przez Windows (np. CON, NUL). Zmiana nazwy i usuwanie działają tylko w obrębie <code>htdocs</code>. Folderu z samą aplikacją MrPrompt Server nie da się usunąć.</div>
+<div class="warn">Usunięcie folderu jest <b>nieodwracalne</b>: pliki nie trafiają do Kosza Windows. Jeśli nie jesteś pewien, najpierw skopiuj folder (w Edytorze: prawy przycisk na folderze → Wykonaj kopię).</div></section>
+<section id="projekt"><h2><i class="fa-solid fa-clipboard-list"></i>Karta projektu: opis, notatki, zadania</h2>
+<p>Kliknij <b>nazwę folderu</b> na liście, a w środku otworzy się karta projektu z trzema zakładkami.</p>
+<h3>Zakładka „Ogólne”</h3>
+<ul>
+<li><b>Krótki opis</b>: jedno zdanie o tym, co to za projekt. Pojawia się w dymku przy znaczku „i”, w pełnym widoku listy i na pulpicie.</li>
+<li><b>Data utworzenia</b>: kiedy zacząłeś projekt.</li>
+<li><b>Adres GitHub</b>: link do repozytorium (musi zaczynać się od <code>https://</code>).</li>
+<li>Kliknij <b>Zapisz</b>, aby zachować (strona odświeży się).</li>
+</ul>
+<h3>Zakładka „Dokumentacja”: notatki</h3>
+<p>To Twój notatnik do projektu: pomysły, instrukcje, historia zmian, hasła do zapamiętania (bez wrażliwych danych).</p>
+<ol>
+<li>Kliknij <b>+ Nowa notatka</b>.</li>
+<li>Wpisz <b>tytuł</b> i treść. Treść pisze się w prostym formacie <b>Markdown</b>: <code># Nagłówek</code>, <code>**pogrubienie**</code>, <code>- punkt listy</code>. Po prawej stronie widzisz na żywo, jak to wygląda.</li>
+<li>Kliknij <b>Zapisz</b>. Notatka trafia na listę.</li>
+</ol>
+<p>Na liście kliknij tytuł, aby rozwinąć notatkę. Przyciski: <b>Edytuj</b> i <b>Usuń</b> (z pytaniem o potwierdzenie).</p>
+<h3>Zakładka „Diagnostyka”</h3>
+<p>Trzy przyciski do szybkich kontroli tego projektu: <b>Czy projekt działa?</b>, <b>Audyt przed publikacją</b> i <b>Zobacz logi błędów tego projektu</b>. Szczegóły w rozdziale „Diagnostyka”.</p>
+<h3>Zakładka „Zadania (TODO)”</h3>
+<ol>
+<li>Wpisz zadanie i kliknij <b>Dodaj</b>.</li>
+<li>Zaznaczaj kwadraciki przy zrobionych zadaniach. Kosz usuwa zadanie.</li>
+<li><b>Ważne:</b> na końcu kliknij zielony przycisk <b>„Zapisz Listę Zadań”</b>. Bez tego zmiany nie zostaną zapisane.</li>
+</ol>
+<div class="note">Dane zapisują się w plikach <b>wewnątrz folderu projektu</b>: <code>.mrp_info.json</code> (opis), <code>notes.json</code> (notatki), <code>todo.json</code> (zadania). Kopiując folder, kopiujesz też notatki. Jeśli używasz Gita, możesz dodać te pliki do <code>.gitignore</code>.</div></section>
+<section id="aplikacje"><h2><i class="fa-solid fa-table-cells-large"></i>Menu „Aplikacje” (dolny pasek)</h2>
+<p>Pomarańczowy pasek na dole ekranu ma przycisk <b>Aplikacje</b>. Otwiera on listę Twoich skrótów w stylu przycisku Start w Windows: aplikacje z XAMPP, Twoje strony lokalne, ale też dowolne adresy w internecie.</p>
+<h3>Co widać w menu</h3>
+<ul>
+<li><b>Wyszukiwarka</b> na górze (kursor ustawia się w niej od razu). Strzałki ↑↓ i <kbd>Enter</kbd> pozwalają wybrać aplikację bez myszy.</li>
+<li><b>Przypięte</b>: kafelki twoich najważniejszych aplikacji.</li>
+<li><b>Wszystkie aplikacje</b>: lista alfabetyczna z ikoną, nazwą i adresem.</li>
+</ul>
+<h3>Dodawanie aplikacji</h3>
+<ol>
+<li>Kliknij <b>+ Dodaj</b>.</li>
+<li>Wpisz <b>nazwę</b> i <b>adres</b> (np. <code>http://localhost/moja-strona</code>). Jeśli pominiesz <code>http://</code>, program dopisze je sam.</li>
+<li>Wybierz <b>ikonę</b> z kolorowej siatki i kliknij <b>Zapisz</b>.</li>
+</ol>
+<h3>Przypinanie, edycja, usuwanie</h3>
+<p>Najedź myszką na aplikację. Po prawej pojawią się trzy przyciski: <b>pinezka</b> (przypnij/odepnij), <b>ołówek</b> (zmień nazwę, adres lub ikonę) i <b>kosz</b> (usuń z menu; nie usuwa samej aplikacji, tylko skrót).</p>
+<div class="tip">Przypięte aplikacje pokazują się też na pulpicie w sekcji „Ulubione i przypięte”.</div>
+<p>Menu zamkniesz klawiszem <kbd>Esc</kbd> albo kliknięciem poza nim.</p></section>
+<section id="diagnostyka"><h2><i class="fa-solid fa-stethoscope"></i>Diagnostyka: co się zepsuło?</h2>
+<p>Menu <b>Diagnostyka</b> (w górnym pasku) zbiera narzędzia, które pomagają, gdy coś nie działa. Zwłaszcza po pracy z AI, kiedy kod bywa napisany z błędem, a strona po prostu jest biała. Ma trzy zakładki.</p>
+
+<h3>1. Logi błędów</h3>
+<p>Serwer zapisuje każdy błąd PHP w pliku dziennika. Zwykle trzeba go szukać ręcznie: tu jest gotowy do czytania.</p>
+<ul>
+<li><b>Każdy błąd</b> ma kolor według ważności (czerwony = krytyczny lub błąd składni, żółty = ostrzeżenie), nazwę projektu, czas („4 min temu”) i plik z numerem linii. Jeśli ten sam błąd powtórzył się wiele razy, widzisz jeden wpis ze znacznikiem <b>×N</b>.</li>
+<li><b>Kopiuj dla AI</b>: kopiuje gotowy opis błędu (komunikat, plik, linia, fragment kodu wokół niej, ślad stosu) do wklejenia w rozmowie z AI. To najszybszy sposób na poprawkę.</li>
+<li><b>Pokaż kod</b> rozwija kilka linii kodu wokół błędu, <b>Otwórz w Edytorze</b> otwiera ten plik, <b>Ślad stosu</b> pokazuje ścieżkę wywołań.</li>
+<li><b>Filtry:</b> wybierz źródło (log PHP, log Apache), ważność (krytyczne, ostrzeżenia, przestarzałe, uwagi) i konkretny projekt.</li>
+<li><b>Tylko nowe od teraz:</b> ukrywa wszystko, co już jest w logu, żebyś widział wyłącznie błędy, które pojawią się po tej chwili. Kliknij, potem odśwież stronę swojego projektu i zobacz, czy coś się zapisało. „Pokaż też starsze” przywraca pełną listę.</li>
+<li><b>Na żywo:</b> lista odświeża się sama co 3 sekundy, gdy testujesz aplikację.</li>
+<li><b>Kopiuj widoczne dla AI</b> zbiera 10 najnowszych błędów w jeden tekst.</li>
+</ul>
+<div class="note">Log obejmuje ostatnie ok. 1,5 MB każdego pliku, czyli zwykle dni lub tygodnie pracy. Stare, dawno naprawione błędy też tam są, dlatego przydaje się „Tylko nowe od teraz”.</div>
+
+<h3>2. Porty i procesy</h3>
+<p>Lista wszystkich programów, które nasłuchują na portach Twojego komputera: numer portu (kliknij, aby otworzyć go w przeglądarce), nazwa programu, polecenie, którym go uruchomiono, projekt (jeśli da się go rozpoznać), numer procesu (PID) i typ:</p>
+<ul>
+<li><b>serwer dev</b>: serwery deweloperskie (PHP <code>php -S</code>, Node, Python…). To one najczęściej zostają uruchomione i zapomniane.</li>
+<li><b>XAMPP</b>: Apache i MariaDB. Są <b>chronione</b>: nie zamkniesz ich stąd (zrób to w panelu XAMPP).</li>
+<li><b>program</b>: inne aplikacje (np. Dropbox), <b>system</b>: procesy Windows (chronione).</li>
+</ul>
+<p><b>Zakończ</b> zamyka wybrany proces po potwierdzeniu. Użyj, gdy program zgłasza „port zajęty” albo gdy chcesz odzyskać pamięć po zapomnianym serwerze. Oznaczenie „sieć” przy porcie znaczy, że jest on dostępny także z innych urządzeń w Twojej sieci lokalnej.</p>
+
+<h3>3. Bazy danych (zrzuty SQL)</h3>
+<p>Lista Twoich baz MariaDB z liczbą tabel i rozmiarem. Przycisk <b>Zrzuć SQL</b> zapisuje pełną kopię bazy w jednym pliku (<code>C:\xampp\backups_sql</code>, poza folderem <code>htdocs</code>, więc nie da się go pobrać z przeglądarki). Po prawej widzisz ostatnie zrzuty, z przyciskami pobrania i otwarcia folderu.</p>
+<div class="tip">Zrób zrzut <b>przed</b> każdą prośbą do AI o zmianę struktury bazy (nowe tabele, zmiana kolumn). Gdyby coś poszło źle, wczytasz plik w phpMyAdmin (Import). Jeśli baza jest wyłączona, ekran oferuje przycisk „Uruchom MariaDB”.</div>
+
+<h3>Kontrola „Czy projekt działa?”</h3>
+<p>Dostępna w karcie projektu (zakładka Diagnostyka) i w menu prawego przycisku na folderze. Po kilku sekundach dostajesz werdykt (zielony, żółty, czerwony) i listę sprawdzeń:</p>
+<table>
+<tr><th>Sprawdzenie</th><th>Co oznacza</th></tr>
+<tr><td>Plik startowy</td><td>Czy jest <code>index.php</code> lub <code>index.html</code>.</td></tr>
+<tr><td>Składnia PHP</td><td>Czy w plikach PHP nie ma błędów zapisu (do 400 plików).</td></tr>
+<tr><td>Odpowiedź strony</td><td>Kod odpowiedzi serwera i czas ładowania. 404 = brak strony startowej, 500 = błąd serwera.</td></tr>
+<tr><td>Zawartość strony</td><td>Wykrywa <b>białą stronę</b> i komunikaty błędów PHP wyświetlone na stronie.</td></tr>
+<tr><td>Ścieżki od korzenia serwera</td><td>Bardzo częsty błąd kodu od AI: adresy zaczynające się od „/” (np. <code>/assets/app.css</code>) szukają pliku poza projektem, bo w XAMPP projekt leży w podfolderze. Trzeba użyć ścieżek względnych (<code>assets/app.css</code>).</td></tr>
+<tr><td>Brakujące pliki (404)</td><td>Style, skrypty i obrazy, do których strona się odwołuje, a ich nie ma.</td></tr>
+<tr><td>Błędy w logach</td><td>Świeże wpisy (z ostatnich 30 minut) dotyczące tego projektu.</td></tr>
+</table>
+<p>Przyciski na dole okna: <b>Logi projektu</b>, <b>Otwórz stronę</b>, <b>Sprawdź ponownie</b> i <b>Kopiuj raport dla AI</b> (gotowy opis problemów do wklejenia).</p>
+
+<h3>Audyt przed publikacją</h3>
+<p>Szybki przegląd projektu pod kątem typowych wpadek, które kończą się wyciekiem danych po wgraniu na hosting. Wyniki są pogrupowane na <b>poważne</b>, <b>średnie</b> i <b>drobne</b>:</p>
+<ul>
+<li><b>Poważne:</b> pliki <code>.env</code> (hasła i klucze), folder <code>.git</code> (cała historia kodu), pliki <code>.php</code> w folderach z przesyłanymi plikami (uploads), klucze i hasła wpisane w kodzie (pokazane zamaskowane, np. <code>sk-a••••••</code>).</li>
+<li><b>Średnie:</b> zrzuty baz i archiwa (<code>.sql</code>, <code>.zip</code>, <code>.bak</code>), połączenie z bazą jako „root” bez hasła, pliki diagnostyczne i wywołania <code>phpinfo()</code>.</li>
+<li><b>Drobne:</b> włączone wyświetlanie błędów w kodzie.</li>
+</ul>
+<p>Przycisk <b>Kopiuj raport dla AI</b> przygotowuje polecenie naprawy wszystkich znalezisk. Na dole okna jest też gotowy fragment pliku <code>.htaccess</code> blokujący dostęp do wrażliwych plików.</p>
+<div class="warn">To szybki przegląd typowych błędów, a nie pełny test bezpieczeństwa. Brak znalezisk nie gwarantuje, że aplikacja jest bezpieczna.</div>
+</section>
+<section id="kreator"><h2><i class="fa-solid fa-wand-magic-sparkles"></i>Nowy projekt: kreator</h2>
+<p>Przycisk <b>+ Nowy projekt</b> w lewym panelu (albo Ctrl+K → „Nowy projekt”) zakłada gotowy projekt jednym kliknięciem, od razu tak, żeby dobrze współpracował z AI.</p>
+<ol>
+<li>Wpisz <b>nazwę</b> (będzie nazwą folderu w <code>htdocs</code>) i opcjonalnie krótki <b>opis</b>.</li>
+<li>Wybierz <b>szablon</b>: <b>PHP</b> (strona startowa i styl), <b>PHP + SQLite</b> (lista wpisów z bazą w pliku, chronioną przed pobraniem), <b>Strona HTML</b> (HTML, CSS, JavaScript) albo <b>Pusty</b>.</li>
+<li>Zostaw zaznaczone <b>CLAUDE.md</b> (zasady dla AI: styl kodu, ścieżki względne, polskie komunikaty, testy po zmianach) i <b>repozytorium git</b> (pierwszy zapisany stan: punkt powrotu, dzięki któremu w Edytorze zobaczysz, co zmieniło AI).</li>
+<li>Kliknij <b>Utwórz projekt</b>. Na końcu możesz od razu otworzyć go w Edytorze lub w przeglądarce.</li>
+</ol>
+<p>Powstają też: <code>README.md</code>, <code>.gitignore</code> i plik z opisem widoczny w panelu. Program <b>nie nadpisze</b> istniejącego folderu: jeśli nazwa jest zajęta, poprosi o inną. Nazwa nie może zawierać znaków <code>&lt; &gt; : " / \ | ? *</code> ani zaczynać się od kropki.</p>
+</section>
+<section id="pasek"><h2><i class="fa-solid fa-grip-lines"></i>Dolny pasek stanu</h2>
+<p>Bursztynowy pasek na dole ekranu jest widoczny cały czas i pokazuje to, co warto wiedzieć „na już”. Wszystkie informacje odświeżają się same (stan usług co ok. 30 sekund).</p>
+<table>
+<tr><th>Element</th><th>Co znaczy i co się stanie po kliknięciu</th></tr>
+<tr><td><b>Aplikacje</b> (po lewej)</td><td>Otwiera menu z Twoimi aplikacjami (opis wyżej).</td></tr>
+<tr><td><b>Bieżący widok</b> (np. „Projekt › MojaStrona”)</td><td>Mówi, w czym jesteś. Dla projektu <b>kliknięcie kopiuje jego pełną ścieżkę</b> do schowka.</td></tr>
+<tr><td><b>Apache ● MariaDB ●</b></td><td>Zielona kropka = usługa działa. Gdy MariaDB przestanie odpowiadać, znacznik zrobi się <b>czerwony i zamiga</b>, a w rogu pojawi się komunikat. Kliknięcie otwiera pełne Statystyki Serwera. Gdy MariaDB jest wyłączona, obok pojawia się biały przycisk <b>Uruchom</b>: kliknij, a aplikacja uruchomi bazę za Ciebie (do 10 sekund), bez otwierania panelu XAMPP.</td></tr>
+<tr><td><b>Wersja PHP</b></td><td>Np. 8.0.30.</td></tr>
+<tr><td><b>Wolne miejsce na dysku</b></td><td>Np. „26 GB wolne”. Od 90% zajętości znacznik robi się jasny (uwaga), od 95% czerwony (alarm), bo pełny dysk potrafi po cichu zepsuć bazy danych i zapisy plików.</td></tr>
+<tr><td><b>Liczba zadań</b> (ikona listy)</td><td>Ile masz łącznie niezałatwionych zadań we wszystkich projektach. Kliknięcie prowadzi na pulpit, gdzie je odhaczysz. Gdy nie masz zadań, znacznika nie ma.</td></tr>
+<tr><td><b>Ostatnio zmieniany projekt</b> (ikona zegara)</td><td>Np. „MojaStrona · 3 min temu”: to projekt, nad którym ostatnio pracowałeś (np. z AI). Kliknięcie otwiera go od razu, z każdego miejsca aplikacji.</td></tr>
+<tr><td><b>Podpowiedzi klawiszy</b> (po prawej)</td><td>Ctrl K = szukaj, F1 = pomoc.</td></tr>
+</table>
+<div class="note">Na wąskich ekranach mniej ważne elementy chowają się po kolei (najpierw podpowiedzi klawiszy, potem ostatni projekt, na końcu PHP i dysk), żeby pasek się nie zatłoczył.</div></section>
+<section id="szukaj"><h2><i class="fa-solid fa-magnifying-glass"></i>Szukaj wszędzie (Ctrl+K)</h2>
+<p>Naciśnij <kbd>Ctrl</kbd>+<kbd>K</kbd> w dowolnym miejscu aplikacji. Pojawi się okno wyszukiwania, w którym wpisujesz kilka liter, a program szuka jednocześnie w:</p>
+<ul><li><b>projektach</b> (otwiera kartę projektu),</li><li><b>aplikacjach</b> z Twojego menu (otwiera je),</li><li><b>narzędziach</b> (Statystyki, Diagnostyka: logi, porty i zrzuty baz, Nowy projekt, Czytniki, Strona startowa).</li></ul>
+<p>Strzałki ↑↓ zmieniają wybór, <kbd>Enter</kbd> otwiera, <kbd>Esc</kbd> zamyka. To najszybszy sposób na przeskoczenie do projektu, gdy masz ich setki.</p></section>
+<section id="statystyki"><h2><i class="fa-solid fa-chart-simple"></i>Statystyki Serwera</h2>
+<p>Menu <b>Statystyki Serwera</b> pokazuje „stan zdrowia” Twojego środowiska. Zajrzyj tu, gdy coś przestało działać.</p>
+<table>
+<tr><th>Kafelek</th><th>Co znaczy</th></tr>
+<tr><td><b>PHP</b></td><td>Wersja języka PHP, na którym działają Twoje strony. Ważne, gdy program wymaga nowszej wersji.</td></tr>
+<tr><td><b>MariaDB</b></td><td>Baza danych (dawniej MySQL). Zielona kropka i numer wersji = działa. „Wyłączony” = uruchom MySQL w panelu XAMPP.</td></tr>
+<tr><td><b>SQLite</b></td><td>Lekka baza w jednym pliku (używa jej m.in. ten panel do zapisu aplikacji i ulubionych).</td></tr>
+<tr><td><b>Dysk</b></td><td>Ile miejsca zajęte i ile wolne. Powyżej 90% warto posprzątać.</td></tr>
+<tr><td><b>RAM</b></td><td>Zajęta pamięć komputera oraz obciążenie procesora.</td></tr>
+</table>
+<p>Niżej znajdziesz:</p>
+<ul>
+<li><b>Twoje aplikacje: pliki wg technologii</b>: ile masz plików PHP, HTML, JavaScript, CSS i baz SQLite oraz ile zajmują.</li>
+<li><b>PHP: konfiguracja i rozszerzenia</b>: limity (np. maksymalny rozmiar wysyłanego pliku), rozszerzenia. Czerwone oznaczenie = brakujące ważne rozszerzenie.</li>
+<li><b>MariaDB: szczegóły</b>: liczba połączeń, kodowanie znaków, rozmiar i lista Twoich baz.</li>
+<li><b>Narzędzia i serwer WWW</b>: wersje Node.js, npm, Composer i Git (jeśli zainstalowane) oraz <b>porty</b>: 80 (strony), 443 (strony szyfrowane), 3306 (baza). Zielony = otwarty.</li>
+<li><b>Ostatnio zmodyfikowane pliki</b>.</li>
+</ul>
+<div class="note">Statystyki pierwszy raz mogą się ładować kilka sekund (program sprawdza dysk). Kolejne otwarcia w ciągu kilku minut są znacznie szybsze.</div></section>
+<section id="edytor"><h2><i class="fa-solid fa-code"></i>Edytor kodu</h2>
+<p>Przycisk <b>Edytor</b> otwiera w nowej karcie przeglądarki program do zaglądania w kod i poprawiania go. Od wersji 4.0 służy głównie do <b>kontrolowania kodu pisanego przez AI</b>: pokazuje, co dokładnie zostało zmienione, i pozwala to cofnąć.</p>
+<p><b>Pełna instrukcja jest w samym Edytorze:</b> menu <b>Pomoc → Jak używać Edytora</b> (albo klawisz <kbd>F1</kbd>).</p>
+<p>Edytor otworzysz też z listy projektów: <b>prawy przycisk na folderze lub pliku → Otwórz w Edytorze</b>.</p>
+<p>Skrót możliwości: tworzenie nowych plików i folderów, otwieranie folderów i plików w kartach, kolorowanie składni, szukanie w plikach, podgląd strony na żywo, terminal, kopie zapasowe, <b>przegląd zmian z porównaniem</b>, automatyczne odświeżanie plików zmienionych przez inne programy, przygotowanie paczki plików dla czatu z AI.</p></section>
+<section id="md"><h2><i class="fa-brands fa-markdown"></i>Czytnik MD (dokumenty Markdown)</h2>
+<p>Markdown (pliki <code>.md</code>) to prosty sposób pisania sformatowanych dokumentów: instrukcji, notatek, plików README. Czytnik pozwala je <b>przeglądać w ładnej formie</b> i <b>poprawiać</b>.</p>
+<h3>Ekran startowy</h3>
+<p>Zobaczysz kartę z trzema sposobami rozpoczęcia:</p>
+<ul>
+<li><b>Przeciągnij plik</b> z Eksploratora na to okno,</li>
+<li>kliknij <b>Wybierz plik</b> (lub pole z przerywaną ramką),</li>
+<li>kliknij <b>Nowy dokument</b>, aby zacząć od pustej kartki.</li>
+</ul>
+<h3>Pasek narzędzi</h3>
+<table>
+<tr><th>Przycisk</th><th>Do czego służy</th></tr>
+<tr><td><b>Nowy</b></td><td>Pusty dokument (poprzednia treść zostanie zastąpiona).</td></tr>
+<tr><td><b>Otwórz</b></td><td>Wybór pliku z dysku.</td></tr>
+<tr><td><b>Odśwież</b></td><td>Wczytuje <b>aktualną treść pliku z dysku</b> bez ponownego wybierania. Przydatne, gdy inny program (np. AI) zmienił plik. Gdy plik zmieni się na dysku, przycisk <b>zacznie pulsować</b> i pojawi się komunikat. Jeśli masz własne niezapisane zmiany, program zapyta, czy je zastąpić.</td></tr>
+<tr><td><b>Zapisz</b> (albo <kbd>Ctrl</kbd>+<kbd>S</kbd>)</td><td>Pobiera dokument jako plik (trafi do folderu „Pobrane” lub przeglądarka zapyta o miejsce).</td></tr>
+<tr><td><b>Edycja / Split / Podgląd</b></td><td>Trzy widoki: tylko pisanie, pisanie i wynik obok siebie, tylko wynik.</td></tr>
+</table>
+<div class="note">Odświeżanie „bez ponownego wybierania” działa w <b>Chrome i Edge</b>, gdy plik otworzysz przyciskiem <b>Otwórz</b> lub przeciągniesz na okno. W innych przeglądarkach (np. Firefox) po zmianie pliku trzeba go wybrać ponownie: program sam o to poprosi.</div></section>
+<section id="json"><h2><i class="fa-solid fa-code"></i>Czytnik JSON</h2>
+<p>JSON to popularny format danych (konfiguracje, wyniki z programów). Bywa nieczytelny, gdy jest zapisany w jednej długiej linijce. Czytnik <b>układa go w drzewo</b> i pilnuje, czy jest poprawny.</p>
+<h3>Ekran startowy</h3>
+<p>Tak samo jak w Czytniku MD: przeciągnij plik <code>.json</code>, wybierz go z dysku albo kliknij <b>Nowy JSON</b>.</p>
+<h3>Pasek narzędzi</h3>
+<table>
+<tr><th>Przycisk</th><th>Do czego służy</th></tr>
+<tr><td><b>Nowy / Otwórz / Odśwież / Zapisz</b></td><td>Jak w Czytniku MD. <b>Odśwież</b> wczytuje najnowszą wersję pliku z dysku i sygnalizuje (pulsowaniem), że plik zmienił się poza czytnikiem.</td></tr>
+<tr><td><b>Formatuj</b></td><td>Układa tekst z wcięciami, żeby dało się go czytać.</td></tr>
+<tr><td><b>Minifikuj</b></td><td>Ściska tekst do jednej linii (mniejszy plik).</td></tr>
+<tr><td><b>Edycja / Split / Podgląd</b></td><td>Widok samego tekstu, obu naraz albo samego wyniku.</td></tr>
+</table>
+<h3>Co widzisz w prawym panelu</h3>
+<ul>
+<li><b>Faktyczny JSON</b>: rozwijane drzewo. Kliknij strzałkę, aby zwinąć lub rozwinąć gałąź. Przyciski <i class="fa-solid fa-folder-open"></i> / <i class="fa-solid fa-folder"></i> rozwijają albo zwijają <b>wszystko</b>. Pole <b>„Szukaj klucza”</b> znajduje pozycje po nazwie.</li>
+<li><b>Treść bez tagów</b>: same wartości (teksty i liczby) bez nawiasów i nazw pól, przydatne, gdy chcesz tylko przeczytać zawartość.</li>
+<li>Na dole lewego panelu jest <b>pasek walidacji</b>: pokazuje, czy JSON jest poprawny, a jeśli nie, mówi, gdzie jest błąd.</li>
+</ul></section>
+<section id="inne"><h2><i class="fa-solid fa-toolbox"></i>Pozostałe przyciski w górnym menu</h2>
+<table>
+<tr><th>Przycisk</th><th>Co robi</th></tr>
+<tr><td><i class="fa-solid fa-house"></i> <b>Domek</b></td><td>Wraca na stronę startową (pulpit) bez przeładowania.</td></tr>
+<tr><td><b>CMD</b></td><td>Otwiera na Twoim komputerze <b>okno wiersza poleceń Windows</b>. Dla osób, które wiedzą, co z nim zrobić.</td></tr>
+<tr><td><b>Bazy IndexDB</b></td><td>Bezpieczny podgląd baz danych zapisanych <b>w przeglądarce</b> (IndexedDB) z eksportem do pliku i importem jako nowej bazy. Opis w rozdziale „Bazy IndexDB”.</td></tr>
+<tr><td><b>PHPinfo</b></td><td>Techniczna strona z pełną konfiguracją PHP (dla ciekawych i programistów).</td></tr>
+<tr><td><b>phpMyAdmin</b></td><td>Program do zarządzania bazami danych MariaDB/MySQL (tworzenie baz, tabel, przeglądanie danych).</td></tr>
+<tr><td><b>O Aplikacji</b></td><td>Wersja programu, wersja PHP i serwera, linki do stron autora.</td></tr>
+<tr><td><i class="fa-brands fa-github"></i> GitHub</td><td>Otwiera github.com. Obok jest link do profilu <b>MrPrompt24</b>.</td></tr>
+<tr><td><i class="fa-solid fa-circle-question"></i> <b>Pomoc</b></td><td>Ta strona.</td></tr>
+</table></section>
+<section id="indexdb"><h2><i class="fa-solid fa-database"></i>Bazy IndexDB (podgląd, eksport, import)</h2>
+<p>Wiele aplikacji, zwłaszcza pisanych z pomocą AI, zapisuje swoje dane <b>w samej przeglądarce</b>, w miejscu zwanym IndexedDB (coś jak szafa z szufladami wbudowana w Chrome czy Edge). Zwykle tych danych nie widać. To narzędzie pozwala do nich zajrzeć, zrobić kopię i ją odtworzyć.</p>
+<div class="note">Jest <b>bezpieczne</b>: nie potrafi niczego edytować ani usuwać w istniejących bazach. Podgląd i eksport tylko czytają, a import zawsze tworzy <b>nową</b> bazę.</div>
+<h3>Co widzisz</h3>
+<ul>
+<li><b>Lewa kolumna:</b> lista baz (nazwa i wersja), wyszukiwarka, a na dole informacja o zajętym miejscu w przeglądarce i o tym, czy dane są „trwałe” (nietrwałe przeglądarka może usunąć, gdy brakuje miejsca).</li>
+<li><b>Po kliknięciu bazy:</b> jej <b>magazyny</b> (odpowiednik tabel) jako zakładki z liczbą rekordów, informacja o kluczu i indeksach oraz lista rekordów podzielona na strony.</li>
+<li><b>Kliknięcie rekordu</b> otwiera po prawej szufladę z pełną, kolorowaną treścią i przyciskiem kopiowania JSON. Esc zamyka szufladę.</li>
+<li><b>Szukanie w rekordach:</b> pole nad tabelą (skrót <kbd>/</kbd>) przeszukuje klucze i treść, do 40 000 rekordów, i pokazuje pierwsze 300 trafień.</li>
+</ul>
+<h3>Eksport (kopia do pliku)</h3>
+<p>Kliknij <b>Eksportuj do pliku</b> albo ikonę przy nazwie bazy. Powstaje plik <code>.idb.json</code> z całą bazą: nazwą, wersją, kluczami, indeksami i wszystkimi rekordami (także daty, pliki binarne, mapy). To pełna kopia zapasowa. Pliki binarne powyżej 25 MB są pomijane (w pliku zostaje adnotacja).</p>
+<h3>Import (krok po kroku)</h3>
+<ol>
+<li>Kliknij <b>Importuj</b> (albo upuść plik na okno) i wybierz plik <code>.idb.json</code>.</li>
+<li>Zobaczysz <b>podgląd</b>: co jest w pliku, ile rekordów, jaka struktura.</li>
+<li>Wpisz <b>nazwę nowej bazy</b>. Jeśli taka już istnieje, program nie pozwoli jej użyć: <b>import nigdy nie nadpisuje istniejących baz</b>.</li>
+<li>Kliknij <b>Utwórz bazę i zaimportuj</b>. Na końcu program sprawdza, czy liczba rekordów się zgadza. Gdy coś pójdzie nie tak, niedokończona baza jest usuwana.</li>
+</ol>
+<div class="warn">Aplikacja, do której należała baza, szuka jej pod <b>oryginalną nazwą</b>. Aby przywrócić dane „na miejsce”, najpierw usuń starą bazę w narzędziach przeglądarki (F12 → Application → IndexedDB), a potem zaimportuj z oryginalną nazwą.</div>
+<h3>Ważne do zapamiętania</h3>
+<ul>
+<li>Widzisz bazy tylko z <b>adresu, pod którym otworzyłeś narzędzie</b> (u góry, np. <code>http://localhost</code>). Ta sama aplikacja pod <code>127.0.0.1</code> lub na innym porcie ma osobne bazy.</li>
+<li>Wszystkie aplikacje pod <code>localhost</code> dzielą jedno „miejsce”, więc zobaczysz bazy wielu programów naraz.</li>
+<li>Wyczyszczenie danych przeglądarki usuwa bazy: ważne dane warto regularnie eksportować.</li>
+<li>Wewnątrz narzędzia jest też skrócona pomoc pod klawiszem <kbd>F1</kbd>.</li>
+</ul></section>
+<section id="skroty"><h2><i class="fa-solid fa-keyboard"></i>Skróty klawiszowe</h2>
+<table>
+<tr><th>Skrót</th><th>Efekt</th></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Szukaj projektu, aplikacji lub narzędzia.</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>Zamyka menu Aplikacje, okno wyszukiwania i inne okna.</td></tr>
+<tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></td><td>Wybór i otwarcie pozycji w wyszukiwarkach.</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>W Czytniku MD: zapisz dokument.</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>Na tej stronie pomocy: szukaj w pomocy.</td></tr>
+</table>
+<p>Skróty Edytora znajdziesz w jego własnej pomocy (<kbd>F1</kbd>).</p></section>
+<section id="problemy"><h2><i class="fa-solid fa-life-ring"></i>Częste problemy i rozwiązania</h2>
+<h3>Animacje mnie rozpraszają albo aplikacja „muli”</h3>
+<p>Okna, menu i widoki wjeżdżają płynnie (miękkie animacje w stylu Apple). Jeśli wolisz wersję bez ruchu, włącz w Windows: <b>Ustawienia → Ułatwienia dostępu → Efekty wizualne → wyłącz „Efekty animacji”</b>. Aplikacja to rozpozna i pokaże wszystko od razu, bez animacji.</p>
+<h3>Widzę komunikat „Nieprawidłowy token” lub „Żądanie zostało zablokowane”</h3>
+<p>To zabezpieczenie: chroni Twój komputer przed obcymi stronami, które próbowałyby wysłać polecenie na <code>localhost</code>. Rozwiązanie: <b>odśwież stronę</b> (<kbd>Ctrl</kbd>+<kbd>F5</kbd>). Zdarza się po dłuższej przerwie lub po zamknięciu przeglądarki.</p>
+<h3>Nowy folder nie pojawia się na liście</h3>
+<p>Kliknij <b>Odśwież serwer</b> w lewym panelu. Foldery ukryte (od kropki) i techniczne (<code>node_modules</code>, <code>vendor</code>) są celowo pomijane.</p>
+<h3>Projekt nie pojawia się w „Ostatnie”</h3>
+<p>Lista „Ostatnie” odświeża się co około 90 sekund i obejmuje zmiany z ostatnich 14 dni. Odczekaj chwilę i kliknij „Odśwież serwer”.</p>
+<h3>MariaDB pokazuje „Wyłączony”</h3>
+<p>Kliknij biały przycisk <b>Uruchom</b> w dolnym pasku (albo w Diagnostyce → Bazy danych). Jeśli to nie pomoże, otwórz <b>XAMPP Control Panel</b> i kliknij Start przy MySQL. Bez bazy nie działają strony, które z niej korzystają.</p>
+<h3>Strona po zmianie od AI jest biała albo pokazuje błąd</h3>
+<p>Otwórz projekt → zakładka <b>Diagnostyka</b> → <b>Czy projekt działa?</b>. Zobaczysz, co dokładnie jest nie tak. Potem w <b>Logach błędów</b> kliknij <b>Kopiuj dla AI</b> przy błędzie i wklej opis w rozmowie z AI.</p>
+<h3>„Port jest zajęty” albo nie mogę uruchomić serwera deweloperskiego</h3>
+<p>Wejdź w <b>Diagnostyka → Porty i procesy</b>, znajdź zapomniany serwer (oznaczony „serwer dev”) i kliknij <b>Zakończ</b>.</p>
+<h3>Brakuje ikon albo czcionek, ekran ładowania trwa długo</h3>
+<p>Ikony i czcionki są pobierane z internetu. Bez połączenia aplikacja działa, ale wygląda skromniej, a ekran ładowania zniknie sam po kilku sekundach.</p>
+<h3>Strona z „Ostatnie” lub pulpit pokazują stare dane</h3>
+<p>Kliknij ikonę domku lub wciśnij <kbd>Ctrl</kbd>+<kbd>F5</kbd>.</p>
+<h3>Zmiana nazwy lub usunięcie nie działa („element może być używany przez inny program”)</h3>
+<p>Windows nie pozwala zmienić ani usunąć pliku lub folderu, który jest właśnie otwarty w innym programie (np. w edytorze, terminalu lub przeglądarce plików). Zamknij ten program i spróbuj ponownie.</p>
+<h3>Nie mogę zapisać zadań / notatek</h3>
+<p>Upewnij się, że kliknąłeś <b>Zapisz</b> (dla zadań: „Zapisz Listę Zadań”) oraz że folder projektu nie jest tylko do odczytu.</p></section>
+<section id="slownik"><h2><i class="fa-solid fa-book"></i>Słowniczek</h2>
+<table>
+<tr><th>Pojęcie</th><th>Wyjaśnienie</th></tr>
+<tr><td><b>XAMPP</b></td><td>Pakiet, który zamienia Twój komputer w mały serwer stron (Apache + PHP + baza danych).</td></tr>
+<tr><td><b>localhost</b></td><td>Adres „ten komputer”. Strony pod <code>http://localhost</code> widzisz tylko Ty.</td></tr>
+<tr><td><b>htdocs</b></td><td>Folder XAMPP, w którym leżą Twoje strony i programy (u Ciebie <code>C:\xampp\htdocs</code>).</td></tr>
+<tr><td><b>Apache</b></td><td>Program, który „serwuje” strony do przeglądarki.</td></tr>
+<tr><td><b>PHP</b></td><td>Język programowania, w którym napisana jest większość Twoich aplikacji.</td></tr>
+<tr><td><b>MariaDB / MySQL</b></td><td>Baza danych: „szafa z szufladami” na dane aplikacji.</td></tr>
+<tr><td><b>SQLite</b></td><td>Mała baza danych w jednym pliku.</td></tr>
+<tr><td><b>Markdown (.md)</b></td><td>Prosty format tekstu z formatowaniem (nagłówki, listy, pogrubienia).</td></tr>
+<tr><td><b>JSON</b></td><td>Format zapisu danych w postaci „klucz: wartość”.</td></tr>
+<tr><td><b>Git / commit</b></td><td>System zapamiętywania wersji kodu. „Commit” to zapisany punkt, do którego można wrócić.</td></tr>
+<tr><td><b>Token</b></td><td>Tajny kod sesji, który potwierdza, że polecenie pochodzi z Twojej aplikacji, a nie z obcej strony.</td></tr>
+<tr><td><b>Ulubione / Przypięte</b></td><td>Ulubione dotyczą projektów (gwiazdka), przypięte dotyczą aplikacji w menu (pinezka).</td></tr>
+</table></section>
+<div class="empty" id="none"><i class="fa-regular fa-face-frown"></i><br>Nic nie znaleziono. Spróbuj innego słowa.</div>
+<footer>MrPrompt Server 4.0 · Centrum Otwartych Innowacji · <a href="https://mrprompt.eu/" target="_blank" rel="noopener">mrprompt.eu</a></footer>
+</main></div><script>
+const secs=[...document.querySelectorAll('main section')];
+const links=[...document.querySelectorAll('nav a')];
+const q=document.getElementById('q');
+q.addEventListener('input',()=>{
+  const t=q.value.trim().toLowerCase();
+  let n=0;
+  secs.forEach((s,i)=>{const ok=!t||s.innerText.toLowerCase().includes(t);s.classList.toggle('hide',!ok);links[i].classList.toggle('hide',!ok);if(ok)n++;});
+  document.querySelector('.lead').classList.toggle('hide',!!t);
+  document.getElementById('none').style.display=n?'none':'block';
+});
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle('on',l.getAttribute('href')==='#'+e.target.id));}});},{rootMargin:'-20% 0px -70% 0px'});
+secs.forEach(s=>io.observe(s));
+if(window.top!==window&&document.title.indexOf('Edytor')>-1){document.querySelector('.top h1').style.display='none';}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='f'){e.preventDefault();q.focus();}});
+</script></body></html>

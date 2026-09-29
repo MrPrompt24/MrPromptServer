@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MrPrompt IndexedDB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+@font-face { font-family: 'Keania One'; font-style: normal; font-weight: 400; font-display: block; src: url('../fonts/KeaniaOne.woff2') format('woff2'); }
+:root {
+    --bg: #1e1e1e; --panel: #252526; --card: #2b2b2d; --border: #3d3d3d; --input: #3c3c3c;
+    --text: #cccccc; --muted: #858585; --bright: #ffffff; --accent: #b87a00; --accent2: #d18f0a; --accent-dim: rgba(184, 122, 0, 0.14);
+    --green: #4ec994; --red: #f44747; --yellow: #e2c08d; --blue: #6cb6ff;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+* { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: #454545 transparent; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.5 'Inter', 'Segoe UI', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden; }
+button { font-family: inherit; }
+::-webkit-scrollbar { width: 7px; height: 7px; } ::-webkit-scrollbar-thumb { background: #454545; border-radius: 4px; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes popIn { from { opacity: 0; transform: translateY(8px) scale(0.95); } to { opacity: 1; transform: none; } }
+@keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes toastIn { from { opacity: 0; transform: translateX(28px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+/* pasek górny */
+.top { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 50px; background: #323233; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.brand { font-family: 'Keania One', Impact, sans-serif; font-size: 20px; letter-spacing: 0.02em; white-space: nowrap; line-height: 1; }
+.brand .m { color: #f1f1f1; } .brand .p { color: #e31b1b; } .brand .s { color: #9b9b9b; }
+.brand small { display: block; text-align: right; font-size: 8px; color: #8c8c8c; margin-top: 2px; letter-spacing: 0.06em; }
+.origin { font: 11px 'JetBrains Mono', monospace; color: var(--muted); background: #1e1e1e; border: 1px solid var(--border); border-radius: 12px; padding: 2px 10px; max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spacer { flex: 1; }
+.btn { background: var(--input); color: var(--text); border: 1px solid #4a4a4a; border-radius: 6px; padding: 7px 13px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: background 0.2s ease, transform 0.25s var(--ease), border-color 0.2s; white-space: nowrap; }
+.btn:hover:not(:disabled) { background: #4a4a4a; color: #fff; }
+.btn:active:not(:disabled) { transform: scale(0.965); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: var(--accent2); }
+.btn.icon { padding: 6px 9px; }
+.badge-ro { display: inline-flex; gap: 6px; align-items: center; color: var(--green); background: rgba(78, 201, 148, 0.1); border: 1px solid rgba(78, 201, 148, 0.35); border-radius: 12px; padding: 2px 10px; font-size: 11px; white-space: nowrap; }
+
+/* układ */
+.layout { flex: 1; display: flex; min-height: 0; }
+aside { width: 310px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; }
+.side-head { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.search { position: relative; }
+.search i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 12px; }
+.search input, .field { width: 100%; background: var(--input); border: 1px solid transparent; color: var(--text); padding: 8px 10px 8px 30px; border-radius: 6px; font: inherit; outline: none; transition: border-color 0.2s; }
+.field { padding-left: 10px; }
+.search input:focus, .field:focus { border-color: var(--accent); }
+.dblist { flex: 1; overflow-y: auto; padding: 2px 8px 10px; }
+.dbitem { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 7px; cursor: pointer; transition: background 0.18s ease, transform 0.25s var(--ease); animation: rise 0.4s var(--ease) backwards; border: 1px solid transparent; }
+.dbitem:hover { background: #2a2d2e; }
+.dbitem.sel { background: #37373d; border-color: rgba(184, 122, 0, 0.5); }
+.dbitem i.ic { color: var(--accent2); width: 16px; text-align: center; }
+.dbitem .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--bright); }
+.dbitem .v { font: 10px 'JetBrains Mono', monospace; color: var(--muted); }
+.dbitem .x { opacity: 0; transition: opacity 0.18s; }
+.dbitem:hover .x, .dbitem.sel .x { opacity: 1; }
+.storage { border-top: 1px solid var(--border); padding: 12px; font-size: 12px; }
+.storage h4 { margin: 0 0 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.3px; color: var(--muted); }
+.bar { height: 5px; background: #3a3a3a; border-radius: 3px; overflow: hidden; margin: 6px 0; }
+.bar > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0; transform-origin: left; animation: growW 1s var(--ease) 0.2s backwards; transition: width 0.6s var(--ease); }
+@keyframes growW { from { transform: scaleX(0); } to { transform: none; } }
+.kv { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); } .kv b { color: var(--text); font-weight: 500; }
+
+main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.empty { margin: auto; text-align: center; color: var(--muted); max-width: 440px; padding: 30px; line-height: 1.7; animation: rise 0.6s var(--ease) backwards; }
+.empty i { font-size: 44px; color: #4a4a4a; display: block; margin-bottom: 14px; }
+.empty b { color: var(--text); }
+.view { display: flex; flex-direction: column; min-height: 0; flex: 1; animation: rise 0.5s var(--ease) backwards; }
+.dbhead { padding: 16px 20px 12px; display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+.dbhead h2 { margin: 0; font-size: 20px; color: var(--bright); font-weight: 600; display: flex; align-items: center; gap: 10px; word-break: break-all; }
+.dbhead h2 i { color: var(--accent2); font-size: 17px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; width: 100%; }
+.chip { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1px 10px; font-size: 11px; color: var(--text); }
+.chip b { color: var(--bright); font-weight: 600; }
+.stores { display: flex; gap: 6px; padding: 0 20px 10px; overflow-x: auto; flex-shrink: 0; }
+.pill { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 18px; padding: 6px 14px; cursor: pointer; white-space: nowrap; font-size: 12px; transition: background 0.2s, border-color 0.2s, transform 0.25s var(--ease); display: inline-flex; gap: 8px; align-items: center; }
+.pill:hover { border-color: #666; } .pill:active { transform: scale(0.96); }
+.pill.sel { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
+.pill .c { font: 10px 'JetBrains Mono', monospace; color: var(--muted); }
+.meta { padding: 0 20px 10px; color: var(--muted); font-size: 12px; display: flex; gap: 6px 16px; flex-wrap: wrap; }
+.meta b { color: var(--text); font-weight: 500; }
+.tools { display: flex; align-items: center; gap: 8px; padding: 8px 20px; border-top: 1px solid var(--border); background: #222; flex-wrap: wrap; }
+.tools .search { width: 300px; max-width: 100%; }
+select.field { width: auto; padding: 7px 8px; }
+.pager { display: flex; align-items: center; gap: 6px; margin-left: auto; color: var(--muted); font-size: 12px; }
+.tablewrap { flex: 1; overflow: auto; min-height: 0; }
+table { border-collapse: collapse; width: 100%; }
+th { position: sticky; top: 0; background: var(--panel); text-align: left; padding: 8px 14px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 600; z-index: 1; }
+td { padding: 7px 14px; border-bottom: 1px solid #2e2e2e; vertical-align: top; }
+tbody tr { cursor: pointer; transition: background 0.15s; animation: fadeIn 0.3s ease backwards; }
+tbody tr:hover { background: #2a2d2e; }
+td.k { font: 12px 'JetBrains Mono', monospace; color: var(--yellow); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+td.i { color: var(--muted); font: 11px 'JetBrains Mono', monospace; width: 50px; }
+td.v { font: 12px 'JetBrains Mono', monospace; color: #b8b8b8; word-break: break-all; }
+td.t { width: 90px; } .type { font-size: 10px; padding: 1px 7px; border-radius: 8px; background: #3a3a3a; color: #aaa; }
+.note { margin: 8px 20px; padding: 8px 12px; border-radius: 6px; font-size: 12px; background: var(--accent-dim); border: 1px solid rgba(184, 122, 0, 0.4); }
+.skeleton { height: 34px; margin: 6px 20px; border-radius: 6px; background: linear-gradient(90deg, #2a2a2a 25%, #333 37%, #2a2a2a 63%); background-size: 400% 100%; animation: shimmer 1.3s ease infinite; }
+@keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* szuflada ze szczegółami rekordu */
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: #232325; border-left: 1px solid var(--border); box-shadow: -20px 0 50px rgba(0, 0, 0, 0.45); display: none; flex-direction: column; z-index: 5; }
+.drawer.open { display: flex; animation: slideIn 0.4s var(--ease) backwards; }
+.dr-head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.dr-head .t { flex: 1; min-width: 0; color: var(--bright); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dr-body { flex: 1; overflow: auto; padding: 14px; }
+pre.json { margin: 0; font: 12.5px/1.6 'JetBrains Mono', monospace; white-space: pre-wrap; word-break: break-word; color: #d4d4d4; }
+.j-k { color: #9cdcfe; } .j-s { color: #ce9178; } .j-n { color: #b5cea8; } .j-b { color: #569cd6; } .j-z { color: #808080; } .j-t { color: var(--yellow); }
+.lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin: 0 0 6px; }
+
+/* okna */
+.overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.62); backdrop-filter: blur(2px); z-index: 50; display: none; align-items: center; justify-content: center; padding: 20px; }
+.overlay.open { display: flex; animation: fadeIn 0.22s ease backwards; }
+.modal { background: #2d2d30; border: 1px solid #454545; border-radius: 12px; width: min(680px, 100%); max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6); animation: popIn 0.4s var(--ease) backwards; }
+.modal.wide { width: min(880px, 100%); }
+.m-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.m-head h3 { margin: 0; flex: 1; font-size: 15px; color: var(--bright); }
+.m-body { padding: 16px 18px; overflow: auto; }
+.m-foot { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+.x { background: none; border: none; color: #999; font-size: 16px; cursor: pointer; border-radius: 5px; padding: 4px 8px; } .x:hover { background: #3c3c3c; color: #fff; }
+.m-body table td, .m-body table th { padding: 6px 10px; }
+.m-body h4 { color: #f0b84a; margin: 16px 0 6px; font-size: 13px; }
+.m-body ul { padding-left: 20px; } .m-body li { margin: 3px 0; }
+.warn { background: rgba(244, 71, 71, 0.08); border: 1px solid rgba(244, 71, 71, 0.4); border-radius: 8px; padding: 10px 14px; margin: 10px 0; }
+.ok { background: rgba(78, 201, 148, 0.08); border: 1px solid rgba(78, 201, 148, 0.35); border-radius: 8px; padding: 10px 14px; margin: 10px 0; }
+.err { color: var(--red); font-size: 12px; min-height: 18px; margin-top: 6px; }
+.dropzone { border: 1.5px dashed #555; border-radius: 10px; padding: 26px; text-align: center; color: var(--muted); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+.dropzone:hover, .dropzone.over { border-color: var(--accent); background: var(--accent-dim); color: var(--text); }
+.dropzone i { font-size: 28px; display: block; margin-bottom: 8px; }
+.prog { height: 8px; background: #3a3a3a; border-radius: 4px; overflow: hidden; margin: 12px 0 6px; } .prog > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0; transition: width 0.25s ease; }
+
+#toasts { position: fixed; right: 16px; bottom: 16px; z-index: 100; display: flex; flex-direction: column; gap: 6px; }
+.toast { background: #2d2d30; border: 1px solid #454545; border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 6px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); max-width: 380px; animation: toastIn 0.5s var(--ease) backwards; }
+.toast.error { border-left-color: var(--red); } .toast.success { border-left-color: var(--green); }
+kbd { background: #1a1a1a; border: 1px solid #555; border-radius: 4px; padding: 0 6px; font: 11px 'JetBrains Mono', monospace; }
+code { background: #1a1a1a; border-radius: 4px; padding: 1px 6px; font: 12px 'JetBrains Mono', monospace; color: #e2b76a; }
+
+@media (max-width: 860px) { aside { width: 100%; max-height: 38vh; border-right: 0; border-bottom: 1px solid var(--border); } .layout { flex-direction: column; } .origin, .badge-ro span { display: none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0s !important; transition-duration: 0.01ms !important; } }
+</style>
+</head>
+<body>
+
+<div class="top">
+    <div class="brand" title="MrPrompt IndexedDB"><span class="m">Mr</span><span class="p">Prompt</span> <span class="s">IndexedDB</span><small>tylko podgląd · eksport · import</small></div>
+    <span class="origin" id="origin" title="Widoczne są bazy tylko z tego adresu"></span>
+    <span class="badge-ro" title="Ta aplikacja niczego nie zmienia w istniejących bazach"><i class="fa-solid fa-shield-halved"></i><span>Tryb bezpieczny: tylko odczyt</span></span>
+    <div class="spacer"></div>
+    <button class="btn" id="btnRefresh" title="Odśwież listę baz"><i class="fa-solid fa-rotate"></i> Odśwież</button>
+    <button class="btn primary" id="btnImport"><i class="fa-solid fa-file-import"></i> Importuj</button>
+    <button class="btn icon" id="btnHelp" title="Pomoc (F1)"><i class="fa-solid fa-circle-question"></i></button>
+    <a class="btn icon" href="../../index.php" title="Wróć do panelu MrPrompt Server"><i class="fa-solid fa-house"></i></a>
+</div>
+
+<div class="layout">
+    <aside>
+        <div class="side-head">
+            <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="dbFilter" type="text" placeholder="Szukaj bazy…" autocomplete="off"></div>
+        </div>
+        <div class="dblist" id="dbList"></div>
+        <div class="storage" id="storage"></div>
+    </aside>
+    <main id="main">
+        <div class="drawer" id="drawer">
+            <div class="dr-head"><div class="t" id="drTitle"></div><button class="btn icon" id="drCopy" title="Kopiuj JSON"><i class="fa-solid fa-copy"></i></button><button class="x" id="drClose" title="Zamknij (Esc)"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="dr-body" id="drBody"></div>
+        </div>
+        <div id="content" style="display:flex;flex-direction:column;flex:1;min-height:0"></div>
+    </main>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div id="toasts"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+ *  MrPrompt IndexedDB: podgląd, eksport i bezpieczny import
+ *  Zasady bezpieczeństwa:
+ *   - istniejące bazy są otwierane wyłącznie do ODCZYTU (transakcje "readonly"),
+ *   - połączenia są zamykane po użyciu i nie blokują aktualizacji w innych aplikacjach,
+ *   - import tworzy WYŁĄCZNIE nową bazę (nigdy nie nadpisuje istniejącej),
+ *   - każdy tekst pochodzący z bazy jest zabezpieczony przed wstrzyknięciem kodu.
+ * ===================================================================== */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtNum = (n) => Number(n).toLocaleString('pl-PL');
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+function fmtBytes(b) {
+    if (!b) return '0 B';
+    const u = ['B', 'KB', 'MB', 'GB', 'TB'], i = Math.min(u.length - 1, Math.floor(Math.log(b) / Math.log(1024)));
+    return (b / Math.pow(1024, i)).toFixed(i ? 1 : 0) + ' ' + u[i];
+}
+function toast(msg, type = 'info') {
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.textContent = msg;
+    $('#toasts').appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4500);
+}
+
+/* ---------- okna ---------- */
+let modalOnClose = null;
+function openModal(html, { wide = false, onClose = null } = {}) {
+    $('#modal').className = 'modal' + (wide ? ' wide' : '');
+    $('#modal').innerHTML = html;
+    $('#overlay').classList.add('open');
+    modalOnClose = onClose;
+}
+function closeModal() {
+    $('#overlay').classList.remove('open');
+    if (modalOnClose) { const f = modalOnClose; modalOnClose = null; f(); }
+}
+$('#overlay').addEventListener('mousedown', (e) => { if (e.target.id === 'overlay' && !busy) closeModal(); });
+let busy = false; // trwa eksport/import: nie zamykaj okna
+
+/* =====================================================================
+ *  Kodowanie wartości IndexedDB do JSON-a (Date, Blob, bajty, Map, Set…)
+ * ===================================================================== */
+const B64_CAP = 25 * 1024 * 1024; // większe bloby/bufory są w eksporcie pomijane (z adnotacją)
+
+function bytesToB64(u8) {
+    let s = '';
+    for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+    return btoa(s);
+}
+function b64ToBytes(b64) {
+    const bin = atob(b64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return u8;
+}
+
+// mode: 'view' (bez treści binarnych) lub 'export' (z base64); ctx.blobs zbiera bloby do asynchronicznego odczytu
+function enc(v, ctx, seen = new Set(), depth = 0) {
+    if (v === null || typeof v === 'boolean' || typeof v === 'string') return v;
+    if (typeof v === 'number') return Number.isFinite(v) ? (Object.is(v, -0) ? { $number: '-0' } : v) : { $number: String(v) };
+    if (v === undefined) return { $undefined: 1 };
+    if (typeof v === 'bigint') return { $bigint: v.toString() };
+    if (typeof v === 'function' || typeof v === 'symbol') return { $undefined: 1 };
+    if (depth > 64) return { $depth: 1 };
+    if (v instanceof Date) return { $date: isNaN(v) ? 'Invalid' : v.toISOString() };
+    if (v instanceof RegExp) return { $regexp: v.toString() };
+    if (typeof Blob !== 'undefined' && v instanceof Blob) {
+        const meta = { type: v.type || '', size: v.size };
+        if (v.name) meta.name = v.name;
+        const node = { $blob: meta };
+        if (ctx.mode === 'export') {
+            if (v.size > B64_CAP) meta.omitted = true;
+            else ctx.blobs.push({ blob: v, meta });
+        }
+        return node;
+    }
+    if (v instanceof ArrayBuffer || ArrayBuffer.isView(v)) {
+        const kind = v instanceof ArrayBuffer ? 'ArrayBuffer' : v.constructor.name;
+        const u8 = v instanceof ArrayBuffer ? new Uint8Array(v) : new Uint8Array(v.buffer, v.byteOffset, v.byteLength);
+        const meta = { kind, length: u8.length };
+        if (ctx.mode === 'export') { if (u8.length > B64_CAP) meta.omitted = true; else meta.base64 = bytesToB64(u8); }
+        return { $bytes: meta };
+    }
+    if (typeof v === 'object') {
+        if (seen.has(v)) return { $circular: 1 };
+        seen.add(v);
+        let out;
+        if (Array.isArray(v)) out = Array.from(v, (x) => enc(x, ctx, seen, depth + 1));
+        else if (v instanceof Map) out = { $map: Array.from(v, ([k, x]) => [enc(k, ctx, seen, depth + 1), enc(x, ctx, seen, depth + 1)]) };
+        else if (v instanceof Set) out = { $set: Array.from(v, (x) => enc(x, ctx, seen, depth + 1)) };
+        else if (v instanceof Error) out = { $error: { name: v.name, message: v.message } };
+        else {
+            const o = {};
+            let tagged = false;
+            for (const k of Object.keys(v)) { if (k.charAt(0) === '$') tagged = true; o[k] = enc(v[k], ctx, seen, depth + 1); }
+            out = tagged ? { $obj: o } : o; // klucze zaczynające się od $ zawijamy, żeby nie pomylić ich ze znacznikami
+        }
+        seen.delete(v);
+        return out;
+    }
+    return String(v);
+}
+
+function dec(x) {
+    if (x === null || typeof x !== 'object') return x;
+    if (Array.isArray(x)) return x.map(dec);
+    const keys = Object.keys(x);
+    if (keys.length === 1) {
+        const k = keys[0], p = x[k];
+        switch (k) {
+            case '$undefined': return undefined;
+            case '$number': return p === '-0' ? -0 : Number(p);
+            case '$bigint': return BigInt(p);
+            case '$date': return p === 'Invalid' ? new Date(NaN) : new Date(p);
+            case '$regexp': { const m = /^\/(.*)\/([a-z]*)$/s.exec(p); return m ? new RegExp(m[1], m[2]) : null; }
+            case '$map': return new Map(p.map(([a, b]) => [dec(a), dec(b)]));
+            case '$set': return new Set(p.map(dec));
+            case '$error': { const e = new Error(p.message); e.name = p.name || 'Error'; return e; }
+            case '$circular': case '$depth': return null;
+            case '$obj': { const o = {}; for (const kk of Object.keys(p)) o[kk] = dec(p[kk]); return o; }
+            case '$bytes': {
+                if (p.omitted || typeof p.base64 !== 'string') return new Uint8Array(0);
+                const u8 = b64ToBytes(p.base64);
+                if (p.kind === 'ArrayBuffer') return u8.buffer;
+                const C = { Uint8Array, Int8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, BigInt64Array, BigUint64Array, DataView }[p.kind];
+                return C && p.kind !== 'Uint8Array' ? new C(u8.buffer) : u8;
+            }
+            case '$blob': {
+                if (p.omitted || typeof p.base64 !== 'string') return new Blob([], { type: p.type || '' });
+                return new Blob([b64ToBytes(p.base64)], { type: p.type || '' });
+            }
+        }
+    }
+    const o = {};
+    for (const k of keys) o[k] = dec(x[k]);
+    return o;
+}
+
+/* ---------- ładny podgląd JSON (wszystkie teksty zabezpieczone) ---------- */
+function jsonHtml(v, indent = 0, budget = { n: 60000 }) {
+    const pad = '  '.repeat(indent), pad1 = '  '.repeat(indent + 1);
+    if (budget.n <= 0) return '<span class="j-z">…</span>';
+    if (v === null) return '<span class="j-b">null</span>';
+    if (typeof v === 'boolean') return `<span class="j-b">${v}</span>`;
+    if (typeof v === 'number') return `<span class="j-n">${v}</span>`;
+    if (typeof v === 'string') {
+        budget.n -= v.length;
+        const s = v.length > 6000 ? v.slice(0, 6000) : v;
+        return `<span class="j-s">"${esc(s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n'))}${v.length > 6000 ? `… (+${fmtNum(v.length - 6000)} znaków)` : ''}"</span>`;
+    }
+    if (Array.isArray(v)) {
+        if (!v.length) return '<span class="j-z">[]</span>';
+        const items = [];
+        for (let i = 0; i < v.length; i++) {
+            if (budget.n <= 0) { items.push(`${pad1}<span class="j-z">… (+${fmtNum(v.length - i)} elementów)</span>`); break; }
+            budget.n -= 8;
+            items.push(pad1 + jsonHtml(v[i], indent + 1, budget));
+        }
+        return '[\n' + items.join(',\n') + '\n' + pad + ']';
+    }
+    const ks = Object.keys(v);
+    if (ks.length === 1 && ks[0][0] === '$') {
+        const t = ks[0], p = v[t];
+        if (t === '$date') return `<span class="j-t">Date</span>(<span class="j-s">${esc(p)}</span>)`;
+        if (t === '$blob') return `<span class="j-t">Blob</span> <span class="j-z">${esc(p.type || 'bez typu')}, ${fmtBytes(p.size)}${p.name ? ', ' + esc(p.name) : ''}</span>`;
+        if (t === '$bytes') return `<span class="j-t">${esc(p.kind)}</span> <span class="j-z">${fmtNum(p.length)} bajtów</span>`;
+        if (t === '$undefined') return '<span class="j-b">undefined</span>';
+        if (t === '$number') return `<span class="j-n">${esc(p)}</span>`;
+        if (t === '$bigint') return `<span class="j-n">${esc(p)}n</span>`;
+    }
+    if (!ks.length) return '<span class="j-z">{}</span>';
+    const lines = [];
+    for (let i = 0; i < ks.length; i++) {
+        if (budget.n <= 0) { lines.push(`${pad1}<span class="j-z">… (+${ks.length - i} pól)</span>`); break; }
+        budget.n -= 8;
+        lines.push(`${pad1}<span class="j-k">"${esc(ks[i])}"</span>: ${jsonHtml(v[ks[i]], indent + 1, budget)}`);
+    }
+    return '{\n' + lines.join(',\n') + '\n' + pad + '}';
+}
+const compact = (v, max = 220) => {
+    let s;
+    try { s = JSON.stringify(v); } catch (e) { s = String(v); }
+    s = s === undefined ? 'undefined' : s;
+    return s.length > max ? s.slice(0, max) + '…' : s;
+};
+const typeOf = (v) => v === null ? 'null' : Array.isArray(v) ? 'tablica' : typeof v === 'object' ? (v.$blob ? 'blob' : v.$bytes ? 'bajty' : v.$date ? 'data' : 'obiekt') : typeof v === 'string' ? 'tekst' : typeof v === 'number' ? 'liczba' : typeof v === 'boolean' ? 'logiczny' : typeof v;
+
+/* =====================================================================
+ *  Dostęp do IndexedDB (tylko odczyt)
+ * ===================================================================== */
+const reqP = (r) => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+const txDone = (tx) => new Promise((res, rej) => { tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error || new Error('Transakcja przerwana')); });
+
+async function listDatabases() {
+    if (!indexedDB.databases) throw new Error('Ta przeglądarka nie potrafi wypisać baz IndexedDB (użyj Chrome, Edge lub nowego Firefoxa).');
+    const l = await indexedDB.databases();
+    return l.filter((d) => d.name).sort((a, b) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));
+}
+
+// Otwiera istniejącą bazę BEZ podawania wersji (nie zmienia schematu). Gdyby baza nie istniała, przerywa i sprząta.
+function openExisting(name) {
+    return new Promise((resolve, reject) => {
+        const r = indexedDB.open(name);
+        r.onupgradeneeded = (e) => { if (e.oldVersion === 0) { r.transaction.abort(); } };
+        r.onsuccess = () => {
+            const db = r.result;
+            db.onversionchange = () => db.close(); // nigdy nie blokuj aktualizacji w innych aplikacjach
+            resolve(db);
+        };
+        r.onerror = () => reject(r.error || new Error('Nie udało się otworzyć bazy'));
+        r.onblocked = () => reject(new Error('Baza jest zablokowana przez inną kartę'));
+    });
+}
+
+async function dbExists(name) {
+    if (indexedDB.databases) return (await indexedDB.databases()).some((d) => d.name === name);
+    return new Promise((resolve) => { // starsze Firefoxy: sprawdź próbnym otwarciem
+        const r = indexedDB.open(name);
+        let existed = true;
+        r.onupgradeneeded = () => { existed = false; r.transaction.abort(); };
+        r.onsuccess = () => { r.result.close(); resolve(existed); };
+        r.onerror = () => { if (!existed) indexedDB.deleteDatabase(name); resolve(existed); };
+    });
+}
+
+function storeSchema(os) {
+    return {
+        name: os.name,
+        keyPath: os.keyPath,
+        autoIncrement: os.autoIncrement,
+        indexes: Array.from(os.indexNames).map((n) => { const ix = os.index(n); return { name: ix.name, keyPath: ix.keyPath, unique: ix.unique, multiEntry: ix.multiEntry }; }),
+    };
+}
+
+/* =====================================================================
+ *  Stan i lista baz
+ * ===================================================================== */
+const S = { dbs: [], filter: '', cur: null, db: null, schema: [], counts: {}, store: null, page: 0, size: 50, q: '', rows: [], total: 0, scanned: 0, capped: false, token: 0 };
+
+function renderList() {
+    const box = $('#dbList');
+    const q = S.filter.toLowerCase();
+    const list = S.dbs.filter((d) => !q || d.name.toLowerCase().includes(q));
+    box.innerHTML = list.map((d, i) => `<div class="dbitem ${S.cur === d.name ? 'sel' : ''}" data-n="${esc(d.name)}" style="animation-delay:${Math.min(i, 12) * 30}ms" title="${esc(d.name)}">
+        <i class="fa-solid fa-database ic"></i><span class="n">${esc(d.name)}</span><span class="v">v${esc(d.version)}</span>
+        <button class="btn icon x" data-exp="${esc(d.name)}" title="Eksportuj tę bazę do pliku JSON"><i class="fa-solid fa-file-export"></i></button></div>`).join('')
+        || `<div style="padding:18px;color:var(--muted);text-align:center">${S.dbs.length ? 'Brak baz pasujących do wyszukiwania.' : 'Ten adres nie ma jeszcze żadnych baz IndexedDB.'}</div>`;
+}
+$('#dbList').addEventListener('click', (e) => {
+    const ex = e.target.closest('[data-exp]');
+    if (ex) { e.stopPropagation(); doExport(ex.dataset.exp); return; }
+    const it = e.target.closest('.dbitem');
+    if (it) selectDb(it.dataset.n);
+});
+$('#dbFilter').addEventListener('input', (e) => { S.filter = e.target.value.trim(); renderList(); });
+
+async function refreshList(keepSel = true) {
+    try {
+        S.dbs = await listDatabases();
+    } catch (e) { S.dbs = []; toast(e.message, 'error'); }
+    renderList();
+    if (keepSel && S.cur && !S.dbs.some((d) => d.name === S.cur)) { closeCurrent(); showEmpty(); }
+    updateStorage();
+}
+$('#btnRefresh').addEventListener('click', async () => { await refreshList(); if (S.cur) selectDb(S.cur, true); toast('Odświeżono listę baz', 'success'); });
+
+async function updateStorage() {
+    const box = $('#storage');
+    if (!navigator.storage || !navigator.storage.estimate) { box.innerHTML = '<h4>Miejsce w przeglądarce</h4><div class="kv"><span>Niedostępne w tej przeglądarce</span></div>'; return; }
+    const est = await navigator.storage.estimate();
+    const pct = est.quota ? (est.usage / est.quota) * 100 : 0;
+    let persisted = null;
+    try { persisted = navigator.storage.persisted ? await navigator.storage.persisted() : null; } catch (e) { /* ignoruj */ }
+    box.innerHTML = `<h4>Miejsce w przeglądarce (ten adres)</h4>
+        <div class="kv"><span>Zajęte (wszystkie dane witryny)</span><b>${fmtBytes(est.usage)}</b></div>
+        <div class="bar"><div style="width:${Math.max(1, Math.min(100, pct))}%"></div></div>
+        <div class="kv"><span>Limit przeglądarki</span><b>${fmtBytes(est.quota)}</b></div>
+        ${persisted === null ? '' : `<div class="kv" title="Dane trwałe przeglądarka usuwa dopiero na Twoje polecenie. Nietrwałe może usunąć przy braku miejsca."><span>Dane trwałe</span><b style="color:${persisted ? 'var(--green)' : 'var(--yellow)'}">${persisted ? 'tak' : 'nie'}</b></div>`}`;
+}
+
+/* =====================================================================
+ *  Widok bazy
+ * ===================================================================== */
+function closeCurrent() {
+    S.token++;
+    if (S.db) { try { S.db.close(); } catch (e) { /* ignoruj */ } }
+    S.db = null; S.cur = null; S.schema = []; S.counts = {}; S.store = null; S.rows = [];
+    closeDrawer();
+}
+function showEmpty() {
+    $('#content').innerHTML = `<div class="empty"><i class="fa-solid fa-database"></i>
+        <b>Wybierz bazę z listy po lewej.</b><br>
+        Zobaczysz jej magazyny i rekordy. Niczego w niej nie zmienisz: to bezpieczny podgląd.<br><br>
+        Chcesz przenieść dane? <b>Eksportuj</b> bazę (ikona przy nazwie) albo <b>Importuj</b> plik jako nową bazę.</div>`;
+}
+
+async function selectDb(name, force = false) {
+    if (S.cur === name && !force) return;
+    closeCurrent();
+    S.cur = name;
+    renderList();
+    const my = ++S.token;
+    $('#content').innerHTML = '<div class="skeleton" style="height:60px;margin-top:20px"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+    try {
+        const db = await openExisting(name);
+        if (my !== S.token) { db.close(); return; }
+        S.db = db;
+        const names = Array.from(db.objectStoreNames);
+        S.schema = [];
+        S.counts = {};
+        if (names.length) {
+            const tx = db.transaction(names, 'readonly');
+            const counts = await Promise.all(names.map((n) => reqP(tx.objectStore(n).count())));
+            names.forEach((n, i) => { S.schema.push(storeSchema(tx.objectStore(n))); S.counts[n] = counts[i]; });
+        }
+        if (my !== S.token) return;
+        S.store = names[0] || null;
+        S.page = 0; S.q = '';
+        renderDbView();
+        if (S.store) loadRows();
+    } catch (e) {
+        if (my !== S.token) return;
+        closeCurrent();
+        renderList();
+        $('#content').innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><b>Nie udało się otworzyć bazy.</b><br>${esc(e.message)}</div>`;
+    }
+}
+
+function renderDbView() {
+    const total = Object.values(S.counts).reduce((a, b) => a + b, 0);
+    const sc = S.schema.find((s) => s.name === S.store);
+    const fmtPath = (kp) => kp === null ? '<b>brak (klucze zapisywane osobno)</b>' : Array.isArray(kp) ? '<b>[' + kp.map(esc).join(', ') + ']</b>' : '<b>' + esc(kp) + '</b>';
+    $('#content').innerHTML = `<div class="view">
+        <div class="dbhead">
+            <h2><i class="fa-solid fa-database"></i>${esc(S.cur)}</h2><div class="spacer"></div>
+            <button class="btn primary" id="btnExpCur"><i class="fa-solid fa-file-export"></i> Eksportuj do pliku</button>
+            <div class="chips"><span class="chip">Wersja <b>${esc(S.db.version)}</b></span><span class="chip">Magazyny <b>${S.schema.length}</b></span><span class="chip">Rekordy łącznie <b>${fmtNum(total)}</b></span></div>
+        </div>
+        ${S.schema.length ? `<div class="stores" id="stores">${S.schema.map((s) => `<button class="pill ${s.name === S.store ? 'sel' : ''}" data-s="${esc(s.name)}"><i class="fa-solid fa-table-list"></i>${esc(s.name)}<span class="c">${fmtNum(S.counts[s.name])}</span></button>`).join('')}</div>
+        <div class="meta"><span>Klucz: ${fmtPath(sc.keyPath)}</span><span>Auto-numeracja: <b>${sc.autoIncrement ? 'tak' : 'nie'}</b></span>
+            <span>Indeksy: <b>${sc.indexes.length ? sc.indexes.map((i) => esc(i.name) + (i.unique ? ' (unikalny)' : '')).join(', ') : 'brak'}</b></span></div>
+        <div class="tools">
+            <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="rowQ" type="text" placeholder="Szukaj w rekordach…  ( / )" autocomplete="off" value="${esc(S.q)}"></div>
+            <select class="field" id="pageSize" title="Rekordów na stronę">${[25, 50, 100, 200].map((n) => `<option ${n === S.size ? 'selected' : ''}>${n}</option>`).join('')}</select>
+            <div class="pager"><span id="rowInfo"></span><button class="btn icon" id="pPrev" title="Poprzednia strona"><i class="fa-solid fa-chevron-left"></i></button><button class="btn icon" id="pNext" title="Następna strona"><i class="fa-solid fa-chevron-right"></i></button></div>
+        </div>
+        <div id="noteBox"></div>
+        <div class="tablewrap"><table><thead><tr><th>#</th><th>Klucz</th><th>Wartość</th><th>Typ</th></tr></thead><tbody id="rows"></tbody></table></div>`
+            : `<div class="empty"><i class="fa-regular fa-folder-open"></i><b>Ta baza nie ma żadnych magazynów.</b><br>Nie ma tu czego pokazać.</div>`}
+    </div>`;
+    const bx = $('#btnExpCur'); if (bx) bx.onclick = () => doExport(S.cur);
+}
+$('#content').addEventListener('click', (e) => {
+    const p = e.target.closest('.pill');
+    if (p) { S.store = p.dataset.s; S.page = 0; S.q = ''; renderDbView(); loadRows(); return; }
+    if (e.target.closest('#pPrev')) { if (S.page > 0) { S.page--; loadRows(); } return; }
+    if (e.target.closest('#pNext')) { S.page++; loadRows(); return; }
+    const tr = e.target.closest('#rows tr');
+    if (tr) openRecord(+tr.dataset.i);
+});
+$('#content').addEventListener('change', (e) => { if (e.target.id === 'pageSize') { S.size = +e.target.value; S.page = 0; loadRows(); } });
+let qTimer;
+$('#content').addEventListener('input', (e) => {
+    if (e.target.id !== 'rowQ') return;
+    clearTimeout(qTimer);
+    qTimer = setTimeout(() => { S.q = e.target.value.trim(); S.page = 0; loadRows(); }, 250);
+});
+
+const SCAN_CAP = 40000, MATCH_CAP = 300;
+
+async function loadRows() {
+    if (!S.db || !S.store) return;
+    const my = S.token, storeName = S.store;
+    const tbody = $('#rows');
+    tbody.innerHTML = '';
+    $('#rowInfo').textContent = 'Wczytywanie…';
+    try {
+        const tx = S.db.transaction(storeName, 'readonly');
+        const os = tx.objectStore(storeName);
+        const rows = [];
+        let scanned = 0, capped = false;
+        const ctx = { mode: 'view', blobs: [] };
+        const q = S.q.toLowerCase();
+        await new Promise((resolve, reject) => {
+            const r = os.openCursor();
+            let skipped = false;
+            r.onerror = () => reject(r.error);
+            r.onsuccess = () => {
+                const c = r.result;
+                if (!c) return resolve();
+                if (!q) {
+                    if (!skipped && S.page * S.size > 0) { skipped = true; c.advance(S.page * S.size); return; }
+                    skipped = true;
+                    rows.push({ key: enc(c.key, ctx), value: enc(c.value, ctx) });
+                    if (rows.length >= S.size) return resolve();
+                    c.continue();
+                } else {
+                    scanned++;
+                    const k = enc(c.key, ctx), v = enc(c.value, ctx);
+                    let hay;
+                    try { hay = (JSON.stringify(k) + ' ' + JSON.stringify(v)).toLowerCase(); } catch (e) { hay = ''; }
+                    if (hay.includes(q)) rows.push({ key: k, value: v });
+                    if (rows.length >= MATCH_CAP) { capped = true; return resolve(); }
+                    if (scanned >= SCAN_CAP) { capped = true; return resolve(); }
+                    c.continue();
+                }
+            };
+        });
+        if (my !== S.token || storeName !== S.store) return;
+        S.rows = rows; S.scanned = scanned; S.capped = capped;
+        S.total = S.counts[storeName];
+        renderRows();
+    } catch (e) {
+        if (my !== S.token) return;
+        $('#rowInfo').textContent = '';
+        $('#noteBox').innerHTML = `<div class="note" style="border-color:var(--red)">Nie udało się odczytać rekordów: ${esc(e.message)}</div>`;
+    }
+}
+
+function renderRows() {
+    const start = S.q ? 0 : S.page * S.size;
+    $('#rows').innerHTML = S.rows.map((r, i) => `<tr data-i="${i}" style="animation-delay:${Math.min(i, 14) * 18}ms"><td class="i">${start + i + 1}</td><td class="k" title="${esc(compact(r.key, 300))}">${esc(compact(r.key, 60))}</td><td class="v">${esc(compact(r.value))}</td><td class="t"><span class="type">${typeOf(r.value)}</span></td></tr>`).join('')
+        || `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:34px;cursor:default">${S.q ? 'Nic nie pasuje do wyszukiwania.' : 'Ten magazyn jest pusty.'}</td></tr>`;
+    let info;
+    if (S.q) info = `${fmtNum(S.rows.length)} trafień`;
+    else { const from = S.rows.length ? start + 1 : 0; info = `${fmtNum(from)}–${fmtNum(start + S.rows.length)} z ${fmtNum(S.total)}`; }
+    $('#rowInfo').textContent = info;
+    $('#pPrev').disabled = !!S.q || S.page === 0;
+    $('#pNext').disabled = !!S.q || (S.page + 1) * S.size >= S.total;
+    $('#noteBox').innerHTML = S.q && S.capped ? `<div class="note">Wyszukiwanie objęło pierwsze ${fmtNum(S.scanned)} rekordów${S.rows.length >= MATCH_CAP ? ` i pokazuje pierwsze ${MATCH_CAP} trafień` : ''}. Zawęź frazę, aby zobaczyć resztę.</div>` : '';
+    $('.tablewrap').scrollTop = 0;
+}
+
+/* ---------- szuflada rekordu ---------- */
+let drawerJson = '';
+function openRecord(i) {
+    const r = S.rows[i];
+    if (!r) return;
+    drawerJson = JSON.stringify({ key: r.key, value: r.value }, null, 2);
+    $('#drTitle').textContent = 'Rekord: ' + compact(r.key, 50);
+    $('#drBody').innerHTML = `<div class="lbl">Klucz</div><pre class="json">${jsonHtml(r.key)}</pre><div class="lbl" style="margin-top:16px">Wartość</div><pre class="json">${jsonHtml(r.value)}</pre>`;
+    $('#drawer').classList.add('open');
+    document.querySelectorAll('#rows tr').forEach((t) => t.style.background = +t.dataset.i === i ? '#37373d' : '');
+}
+function closeDrawer() { $('#drawer').classList.remove('open'); document.querySelectorAll('#rows tr').forEach((t) => t.style.background = ''); }
+$('#drClose').onclick = closeDrawer;
+$('#drCopy').onclick = async () => {
+    try { await navigator.clipboard.writeText(drawerJson); toast('Skopiowano JSON rekordu', 'success'); }
+    catch (e) { toast('Schowek zablokowany przez przeglądarkę', 'error'); }
+};
+
+/* =====================================================================
+ *  EKSPORT (pełny: wersja, klucze, indeksy, dane)
+ * ===================================================================== */
+async function buildExport(name, onProgress) {
+    const db = await openExisting(name);
+    try {
+        const names = Array.from(db.objectStoreNames);
+        const out = { format: 'mrprompt-idb-export', formatVersion: 2, exportedAt: new Date().toISOString(), origin: location.origin, database: { name, version: db.version, stores: [] } };
+        if (!names.length) return out;
+        const tx = db.transaction(names, 'readonly'); // jedna spójna, tylko do odczytu
+        const parts = names.map((n) => { const os = tx.objectStore(n); return { schema: storeSchema(os), values: reqP(os.getAll()), keys: reqP(os.getAllKeys()) }; });
+        const all = await Promise.all(parts.map(async (p) => ({ schema: p.schema, values: await p.values, keys: await p.keys })));
+        const ctx = { mode: 'export', blobs: [] };
+        let done = 0; const totalRecs = all.reduce((a, s) => a + s.values.length, 0);
+        for (const s of all) {
+            const records = new Array(s.values.length);
+            for (let i = 0; i < s.values.length; i++) {
+                records[i] = { key: enc(s.keys[i], ctx), value: enc(s.values[i], ctx) };
+                if (++done % 2000 === 0) { onProgress && onProgress(done / totalRecs * 0.6, `Kodowanie rekordów: ${fmtNum(done)} / ${fmtNum(totalRecs)}`); await wait(0); }
+            }
+            out.database.stores.push({ ...s.schema, records });
+        }
+        for (let i = 0; i < ctx.blobs.length; i++) {
+            const { blob, meta } = ctx.blobs[i];
+            meta.base64 = bytesToB64(new Uint8Array(await blob.arrayBuffer()));
+            if (i % 5 === 0) onProgress && onProgress(0.6 + (i / ctx.blobs.length) * 0.35, `Pliki binarne: ${i + 1} / ${ctx.blobs.length}`);
+        }
+        return out;
+    } finally { db.close(); }
+}
+
+async function doExport(name) {
+    if (busy) return;
+    let total = 0;
+    try {
+        const db = await openExisting(name);
+        const names = Array.from(db.objectStoreNames);
+        if (names.length) { const tx = db.transaction(names, 'readonly'); total = (await Promise.all(names.map((n) => reqP(tx.objectStore(n).count())))).reduce((a, b) => a + b, 0); }
+        db.close();
+    } catch (e) { toast('Nie udało się odczytać bazy: ' + e.message, 'error'); return; }
+
+    if (total > 300000) {
+        const go = await new Promise((resolve) => {
+            openModal(`<div class="m-head"><h3>Duża baza</h3></div><div class="m-body"><div class="warn">Baza „${esc(name)}” ma ${fmtNum(total)} rekordów. Eksport zbuduje cały plik w pamięci przeglądarki i może potrwać oraz zająć dużo RAM.</div></div>
+            <div class="m-foot"><button class="btn" id="cNo">Anuluj</button><button class="btn primary" id="cYes">Eksportuj mimo to</button></div>`, { onClose: () => resolve(false) });
+            $('#cNo').onclick = () => closeModal();
+            $('#cYes').onclick = () => { modalOnClose = null; closeModal(); resolve(true); };
+        });
+        if (!go) return;
+    }
+
+    busy = true;
+    openModal(`<div class="m-head"><h3><i class="fa-solid fa-file-export" style="color:var(--accent2)"></i> Eksport: ${esc(name)}</h3></div><div class="m-body"><div id="pTxt">Przygotowuję…</div><div class="prog"><div id="pBar"></div></div><div style="color:var(--muted);font-size:12px">Baza jest tylko czytana: nic w niej się nie zmienia.</div></div>`);
+    try {
+        const data = await buildExport(name, (f, t) => { $('#pBar').style.width = Math.round(f * 100) + '%'; $('#pTxt').textContent = t; });
+        $('#pTxt').textContent = 'Zapisuję plik…'; $('#pBar').style.width = '97%';
+        await wait(30);
+        const json = JSON.stringify(data);
+        const blob = new Blob([json], { type: 'application/json' });
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${name.replace(/[\\/:*?"<>|]+/g, '_')}_${stamp}.idb.json`;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+        busy = false;
+        closeModal();
+        const recs = data.database.stores.reduce((s, x) => s + x.records.length, 0);
+        toast(`Wyeksportowano „${name}”: ${data.database.stores.length} magazynów, ${fmtNum(recs)} rekordów (${fmtBytes(blob.size)})`, 'success');
+    } catch (e) {
+        busy = false;
+        closeModal();
+        toast('Eksport nie powiódł się: ' + e.message, 'error');
+    }
+}
+
+/* =====================================================================
+ *  IMPORT (zawsze do NOWEJ bazy; istniejących baz nie dotyka)
+ * ===================================================================== */
+const MAX_IMPORT_BYTES = 400 * 1024 * 1024;
+
+// Normalizacja: nowy format v2 oraz stary format ({name, data:{magazyn:[rekordy]}})
+function normalizePayload(j) {
+    if (!j || typeof j !== 'object') throw new Error('To nie jest poprawny plik eksportu.');
+    if (j.format === 'mrprompt-idb-export' && j.database && Array.isArray(j.database.stores)) {
+        const d = j.database;
+        if (typeof d.name !== 'string' || !d.name) throw new Error('Brak nazwy bazy w pliku.');
+        const seen = new Set();
+        const stores = d.stores.map((s) => {
+            if (!s || typeof s.name !== 'string') throw new Error('Nieprawidłowy magazyn w pliku.');
+            if (seen.has(s.name)) throw new Error('Powtórzona nazwa magazynu: ' + s.name);
+            seen.add(s.name);
+            if (!Array.isArray(s.records)) throw new Error('Magazyn „' + s.name + '” nie ma listy rekordów.');
+            const kp = s.keyPath === undefined ? null : s.keyPath;
+            if (!(kp === null || typeof kp === 'string' || (Array.isArray(kp) && kp.every((x) => typeof x === 'string')))) throw new Error('Nieprawidłowy klucz magazynu „' + s.name + '”.');
+            return { name: s.name, keyPath: kp, autoIncrement: !!s.autoIncrement, indexes: Array.isArray(s.indexes) ? s.indexes.filter((i) => i && typeof i.name === 'string') : [], records: s.records };
+        });
+        return { name: d.name, version: Number.isSafeInteger(d.version) && d.version > 0 ? d.version : 1, stores, legacy: false, origin: j.origin, exportedAt: j.exportedAt };
+    }
+    if (typeof j.name === 'string' && j.data && typeof j.data === 'object' && !Array.isArray(j.data)) { // stary format
+        const stores = Object.keys(j.data).map((n) => {
+            const recs = j.data[n];
+            if (!Array.isArray(recs)) throw new Error('Magazyn „' + n + '” nie ma listy rekordów.');
+            const inline = recs.length > 0 && recs.every((r) => r && typeof r === 'object' && !Array.isArray(r) && 'id' in r);
+            return { name: n, keyPath: inline ? 'id' : null, autoIncrement: true, indexes: [], records: recs.map((r) => (inline ? { key: null, value: r } : { key: null, value: r })), legacyKeys: !inline };
+        });
+        return { name: j.name, version: 1, stores, legacy: true };
+    }
+    throw new Error('Nie rozpoznano formatu pliku. Użyj pliku wyeksportowanego z tej aplikacji.');
+}
+
+function nextFreeName(base, existing) {
+    if (!existing.has(base)) return base;
+    for (let i = 2; i < 1000; i++) { const n = `${base} (kopia ${i})`; if (!existing.has(n)) return n; }
+    return base + ' ' + Date.now();
+}
+
+function pickImportFile() {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = () => { if (inp.files[0]) startImport(inp.files[0]); };
+    inp.click();
+}
+$('#btnImport').addEventListener('click', openImportDialog);
+
+function openImportDialog() {
+    if (busy) return;
+    openModal(`<div class="m-head"><h3><i class="fa-solid fa-file-import" style="color:var(--accent2)"></i> Import bazy z pliku</h3><button class="x" id="mx"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="m-body"><div class="dropzone" id="dz"><i class="fa-solid fa-arrow-up-from-bracket"></i><b style="color:var(--text)">Przeciągnij plik tutaj</b> lub kliknij, aby wybrać<br><span style="font-size:12px">plik <code>.idb.json</code> wyeksportowany z tej aplikacji</span></div>
+        <div class="ok" style="margin-top:14px"><b>Bezpiecznie:</b> import zawsze tworzy <b>nową</b> bazę. Żadna istniejąca baza nie zostanie zmieniona ani nadpisana. Przed importem zobaczysz podgląd.</div></div>`);
+    $('#mx').onclick = closeModal;
+    const dz = $('#dz');
+    dz.onclick = pickImportFile;
+    dz.ondragover = (e) => { e.preventDefault(); dz.classList.add('over'); };
+    dz.ondragleave = () => dz.classList.remove('over');
+    dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove('over'); if (e.dataTransfer.files[0]) startImport(e.dataTransfer.files[0]); };
+}
+window.addEventListener('dragover', (e) => e.preventDefault());
+window.addEventListener('drop', (e) => { e.preventDefault(); if (!busy && e.dataTransfer.files[0] && !$('#overlay').classList.contains('open')) startImport(e.dataTransfer.files[0]); });
+
+async function startImport(file) {
+    if (busy) return;
+    if (file.size > MAX_IMPORT_BYTES) { toast(`Plik jest zbyt duży (${fmtBytes(file.size)}). Limit to ${fmtBytes(MAX_IMPORT_BYTES)}.`, 'error'); return; }
+    let payload;
+    try {
+        payload = normalizePayload(JSON.parse(await file.text()));
+    } catch (e) {
+        openModal(`<div class="m-head"><h3>Nie można zaimportować pliku</h3><button class="x" id="mx"><i class="fa-solid fa-xmark"></i></button></div><div class="m-body"><div class="warn">${esc(e instanceof SyntaxError ? 'Plik nie jest poprawnym JSON-em.' : e.message)}</div></div><div class="m-foot"><button class="btn" id="mok">Zamknij</button></div>`);
+        $('#mx').onclick = $('#mok').onclick = closeModal;
+        return;
+    }
+    const existing = new Set((await listDatabases().catch(() => [])).map((d) => d.name));
+    const totalRecs = payload.stores.reduce((a, s) => a + s.records.length, 0);
+    const defName = nextFreeName(payload.name, existing);
+    const rowsHtml = payload.stores.map((s) => `<tr><td>${esc(s.name)}</td><td>${s.keyPath === null ? 'osobno' : esc(Array.isArray(s.keyPath) ? s.keyPath.join(', ') : s.keyPath)}</td><td>${s.indexes.length}</td><td style="text-align:right">${fmtNum(s.records.length)}</td></tr>`).join('');
+    openModal(`<div class="m-head"><h3><i class="fa-solid fa-file-import" style="color:var(--accent2)"></i> Podgląd importu</h3><button class="x" id="mx"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="m-body">
+            <div class="kv" style="margin-bottom:4px"><span>Plik</span><b>${esc(file.name)} (${fmtBytes(file.size)})</b></div>
+            <div class="kv"><span>Baza w pliku</span><b>${esc(payload.name)}, wersja ${payload.version}${payload.legacy ? ', <span style="color:var(--yellow)">stary format: struktura odgadnięta</span>' : ''}</b></div>
+            ${payload.origin && payload.origin !== location.origin ? `<div class="warn" style="margin-top:10px">Plik pochodzi z innego adresu (<code>${esc(payload.origin)}</code>). Aplikacja, do której należy ta baza, może jej nie znaleźć pod nową nazwą.</div>` : ''}
+            <h4>Zawartość (${payload.stores.length} magazynów, ${fmtNum(totalRecs)} rekordów)</h4>
+            <table style="width:100%;border-collapse:collapse"><thead><tr><th>Magazyn</th><th>Klucz</th><th>Indeksy</th><th style="text-align:right">Rekordy</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="4" style="color:var(--muted)">Brak magazynów</td></tr>'}</tbody></table>
+            <h4>Nazwa nowej bazy</h4>
+            <input class="field" id="impName" value="${esc(defName)}" autocomplete="off" spellcheck="false">
+            <div class="err" id="impErr"></div>
+            <div class="ok"><b>To nie zmieni żadnej istniejącej bazy.</b> Powstanie nowa baza o powyższej nazwie. Jeśli nazwa jest zajęta, wybierz inną.</div>
+        </div>
+        <div class="m-foot"><button class="btn" id="mcancel">Anuluj</button><button class="btn primary" id="mgo"><i class="fa-solid fa-file-import"></i> Utwórz bazę i zaimportuj</button></div>`, { wide: true });
+    $('#mx').onclick = $('#mcancel').onclick = closeModal;
+
+    const inp = $('#impName'), err = $('#impErr'), go = $('#mgo');
+    const validate = async () => {
+        const n = inp.value;
+        let msg = '';
+        if (!n.trim()) msg = 'Podaj nazwę nowej bazy.';
+        else if (n.length > 200) msg = 'Nazwa jest zbyt długa.';
+        else if ((await listDatabases().catch(() => [])).some((d) => d.name === n)) msg = 'Baza o tej nazwie już istnieje. Wybierz inną nazwę: import nie nadpisuje istniejących baz.';
+        err.textContent = msg;
+        go.disabled = !!msg;
+        return !msg;
+    };
+    inp.oninput = validate;
+    inp.onkeydown = (e) => { if (e.key === 'Enter' && !go.disabled) go.click(); };
+    validate();
+    go.onclick = async () => { if (await validate()) runImport(payload, inp.value); };
+}
+
+function deleteDb(name) {
+    return new Promise((resolve) => { const r = indexedDB.deleteDatabase(name); r.onsuccess = r.onerror = r.onblocked = () => resolve(); });
+}
+
+async function runImport(payload, target) {
+    busy = true;
+    openModal(`<div class="m-head"><h3><i class="fa-solid fa-file-import" style="color:var(--accent2)"></i> Import: ${esc(target)}</h3></div><div class="m-body"><div id="pTxt">Tworzę bazę…</div><div class="prog"><div id="pBar"></div></div><div style="color:var(--muted);font-size:12px">Nie zamykaj tej karty do końca importu.</div></div>`);
+    const setP = (f, t) => { $('#pBar').style.width = Math.round(f * 100) + '%'; $('#pTxt').textContent = t; };
+    let created = false;
+    try {
+        if (await dbExists(target)) throw new Error('Baza o tej nazwie już istnieje.'); // ostatnie sprawdzenie tuż przed utworzeniem
+        // 1) struktura
+        const db = await new Promise((resolve, reject) => {
+            const r = indexedDB.open(target, payload.version);
+            r.onupgradeneeded = (e) => {
+                if (e.oldVersion !== 0) { r.transaction.abort(); return; } // zabezpieczenie: nigdy nie zmieniaj istniejącej bazy
+                created = true;
+                const d = r.result;
+                for (const s of payload.stores) {
+                    const opts = {};
+                    if (s.keyPath !== null) opts.keyPath = s.keyPath;
+                    if (s.autoIncrement) opts.autoIncrement = true;
+                    const os = d.createObjectStore(s.name, opts);
+                    for (const ix of s.indexes) {
+                        try { os.createIndex(ix.name, ix.keyPath, { unique: !!ix.unique, multiEntry: !!ix.multiEntry }); } catch (e2) { /* pomiń wadliwy indeks */ }
+                    }
+                }
+            };
+            r.onsuccess = () => resolve(r.result);
+            r.onerror = () => reject(r.error || new Error('Nie udało się utworzyć bazy'));
+            r.onblocked = () => reject(new Error('Utworzenie bazy zostało zablokowane'));
+        });
+        // 2) dane (porcjami)
+        const total = payload.stores.reduce((a, s) => a + s.records.length, 0) || 1;
+        let done = 0;
+        try {
+            for (const s of payload.stores) {
+                const CH = 500;
+                for (let off = 0; off < s.records.length; off += CH) {
+                    const tx = db.transaction(s.name, 'readwrite');
+                    const os = tx.objectStore(s.name);
+                    const outOfLine = os.keyPath === null;
+                    for (const rec of s.records.slice(off, off + CH)) {
+                        const value = dec(rec.value);
+                        if (outOfLine) {
+                            if (rec.key !== null && rec.key !== undefined) os.put(value, dec(rec.key));
+                            else os.add(value); // stary format bez kluczy: auto-numeracja
+                        } else os.put(value);
+                    }
+                    await txDone(tx);
+                    done += Math.min(CH, s.records.length - off);
+                    setP(done / total * 0.95, `Zapisuję „${s.name}”: ${fmtNum(done)} / ${fmtNum(total)} rekordów`);
+                    await wait(0);
+                }
+            }
+        } catch (e) { db.close(); throw e; }
+        // 3) weryfikacja
+        setP(0.97, 'Sprawdzam poprawność…');
+        const names = Array.from(db.objectStoreNames);
+        const bad = [];
+        if (names.length) {
+            const tx = db.transaction(names, 'readonly');
+            for (const s of payload.stores) { const c = await reqP(tx.objectStore(s.name).count()); if (c !== s.records.length) bad.push(`${s.name}: ${c} z ${s.records.length}`); }
+        }
+        db.close();
+        if (bad.length) throw new Error('Liczba rekordów po imporcie nie zgadza się: ' + bad.join('; '));
+        busy = false;
+        setP(1, 'Gotowe');
+        closeModal();
+        toast(`Zaimportowano jako nową bazę „${target}” (${fmtNum(done)} rekordów)`, 'success');
+        await refreshList(false);
+        selectDb(target, true);
+    } catch (e) {
+        busy = false;
+        if (created) await deleteDb(target); // posprzątaj niepełną bazę
+        openModal(`<div class="m-head"><h3>Import nie powiódł się</h3><button class="x" id="mx"><i class="fa-solid fa-xmark"></i></button></div><div class="m-body"><div class="warn">${esc(e.message || e)}</div><div class="ok">Niedokończona baza została usunięta. Żadna istniejąca baza nie została zmieniona.</div></div><div class="m-foot"><button class="btn" id="mok">Zamknij</button></div>`);
+        $('#mx').onclick = $('#mok').onclick = closeModal;
+        refreshList();
+    }
+}
+
+/* =====================================================================
+ *  Pomoc
+ * ===================================================================== */
+function openHelp() {
+    openModal(`<div class="m-head"><h3><i class="fa-solid fa-circle-question" style="color:var(--accent2)"></i> Pomoc: MrPrompt IndexedDB</h3><button class="x" id="mx"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="m-body" style="line-height:1.7">
+        <p><b>Co to jest IndexedDB?</b> To „szafa z szufladami” wbudowana w przeglądarkę. Wiele aplikacji (zwłaszcza pisanych z pomocą AI) zapisuje w niej swoje dane: notatki, ustawienia, listy. Ta aplikacja pozwala <b>zajrzeć do tej szafy</b>, zrobić z niej <b>kopię do pliku</b> i wgrać kopię z powrotem jako nową bazę.</p>
+        <div class="ok"><b>Jest bezpieczna:</b> nie umie niczego edytować ani usuwać w istniejących bazach. Podgląd i eksport tylko czytają, a import zawsze tworzy nową bazę.</div>
+        <h4>Jak czytać ekran</h4>
+        <ul>
+            <li><b>Lewa kolumna:</b> lista baz (nazwa i wersja). Ikona strzałki przy nazwie eksportuje bazę. Na dole widać zajęte miejsce w przeglądarce.</li>
+            <li><b>Kliknij bazę:</b> zobaczysz jej <b>magazyny</b> (odpowiednik tabel) jako kolorowe zakładki z liczbą rekordów, informację o kluczu i indeksach oraz listę rekordów.</li>
+            <li><b>Kliknij rekord:</b> po prawej otworzy się szuflada z pełną, kolorową treścią. Przycisk kopiuje ją jako JSON. <kbd>Esc</kbd> zamyka.</li>
+            <li><b>Szukaj w rekordach:</b> pole nad tabelą przeszukuje klucze i treść (do 40 000 rekordów, pokazuje pierwsze 300 trafień). Skrót: <kbd>/</kbd>.</li>
+            <li><b>Strony:</b> strzałki po prawej i wybór liczby rekordów na stronę.</li>
+        </ul>
+        <h4>Eksport</h4>
+        <p>Kliknij <b>Eksportuj do pliku</b> (albo ikonę przy nazwie bazy). Powstanie plik <code>.idb.json</code> z <b>całą bazą</b>: nazwą, wersją, kluczami, indeksami i wszystkimi rekordami (także daty, pliki binarne, mapy i zbiory). To pełna kopia zapasowa, z której da się odtworzyć bazę.</p>
+        <h4>Import (krok po kroku)</h4>
+        <ol>
+            <li>Kliknij <b>Importuj</b> (albo upuść plik na okno).</li>
+            <li>Zobaczysz <b>podgląd</b>: co jest w pliku, ile rekordów, jaka struktura.</li>
+            <li>Wpisz <b>nazwę nowej bazy</b>. Jeśli podana nazwa już istnieje, aplikacja nie pozwoli jej użyć, bo <b>import nigdy nie nadpisuje istniejących baz</b>.</li>
+            <li>Kliknij <b>Utwórz bazę i zaimportuj</b>. Po zakończeniu aplikacja sprawdza, czy liczba rekordów się zgadza. Jeśli coś pójdzie nie tak, niedokończona baza jest usuwana.</li>
+        </ol>
+        <div class="warn">Aplikacja, do której należała baza, szuka jej pod <b>oryginalną nazwą</b>. Jeśli chcesz przywrócić bazę „na miejsce”, najpierw usuń starą w narzędziach przeglądarki (F12 → Application → IndexedDB) albo w ustawieniach witryny, a potem zaimportuj z oryginalną nazwą.</div>
+        <h4>Ważne ograniczenia</h4>
+        <ul>
+            <li>Widzisz bazy tylko z <b>adresu, pod którym otworzyłeś tę stronę</b> (u góry: <code id="hOrigin"></code>). Ta sama aplikacja pod <code>127.0.0.1</code> albo na innym porcie ma osobne bazy.</li>
+            <li>Wszystkie aplikacje pod <code>localhost</code> dzielą jedno „miejsce”, więc zobaczysz bazy wielu programów naraz.</li>
+            <li>Pliki binarne większe niż 25 MB nie są eksportowane (w pliku zostaje adnotacja).</li>
+            <li>Wyczyszczenie danych przeglądarki usuwa bazy. Rób regularnie eksport ważnych danych.</li>
+            <li>Potrzebna jest przeglądarka, która potrafi wypisać bazy: Chrome, Edge lub nowy Firefox.</li>
+        </ul>
+    </div><div class="m-foot"><button class="btn primary" id="mok">Rozumiem</button></div>`, { wide: true });
+    $('#hOrigin').textContent = location.origin;
+    $('#mx').onclick = $('#mok').onclick = closeModal;
+}
+$('#btnHelp').addEventListener('click', openHelp);
+
+document.addEventListener('keydown', (e) => {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+    if (e.key === 'F1') { e.preventDefault(); openHelp(); }
+    else if (e.key === 'Escape') { if ($('#overlay').classList.contains('open') && !busy) closeModal(); else closeDrawer(); }
+    else if (e.key === '/' && !typing) { const q = $('#rowQ'); if (q) { e.preventDefault(); q.focus(); } }
+});
+window.addEventListener('pagehide', () => { if (S.db) { try { S.db.close(); } catch (e) { /* ignoruj */ } } });
+
+/* ---------- start ---------- */
+$('#origin').textContent = location.origin;
+showEmpty();
+refreshList();
+</script>
+</body>
+</html>
